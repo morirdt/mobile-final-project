@@ -36,7 +36,7 @@ class RegisterFragment : Fragment() {
     }
 
     private fun setupLoginLink() {
-        binding?.loginLink?.setOnClickListener {
+        binding?.loginLinkTextView?.setOnClickListener {
             findNavController().popBackStack()
         }
     }
@@ -84,8 +84,6 @@ class RegisterFragment : Fragment() {
         button?.setBackgroundColor(resources.getColor(android.R.color.white, null))
         button?.setTextColor(resources.getColor(com.example.mobilefinalproject.R.color.teal_700, null))
     }
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

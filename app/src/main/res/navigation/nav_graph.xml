@@ -5,6 +5,12 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
 
+    <action
+        android:id="@+id/action_global_loginFragment"
+        app:destination="@id/loginFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.mobilefinalproject.ui.auth.LoginFragment"
@@ -13,6 +19,16 @@
         <action
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_driverContainerFragment"
+            app:destination="@id/driverContainerFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_loginFragment_to_customerContainerFragment"
+            app:destination="@id/customerContainerFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -20,5 +36,17 @@
         android:name="com.example.mobilefinalproject.ui.auth.RegisterFragment"
         android:label="Register"
         tools:layout="@layout/fragment_register" />
+
+    <fragment
+        android:id="@+id/driverContainerFragment"
+        android:name="com.example.mobilefinalproject.ui.driver.DriverContainerFragment"
+        android:label="Driver Home"
+        tools:layout="@layout/fragment_driver_container" />
+
+    <fragment
+        android:id="@+id/customerContainerFragment"
+        android:name="com.example.mobilefinalproject.ui.customer.CustomerContainerFragment"
+        android:label="Customer Home"
+        tools:layout="@layout/fragment_customer_container" />
 
 </navigation>

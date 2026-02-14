@@ -1,6 +1,5 @@
 package com.example.mobilefinalproject.ui.auth
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -8,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.databinding.FragmentLoginBinding
-import com.example.mobilefinalproject.ui.driver.DriverHomeActivity
 import com.google.android.material.button.MaterialButton
 
 class LoginFragment : Fragment() {
@@ -43,14 +41,12 @@ class LoginFragment : Fragment() {
             // For now, assume successful login
             when (selectedUserType) {
                 UserType.DRIVER -> {
-                    // Navigate to Driver Home Activity
-                    val intent = Intent(requireContext(), DriverHomeActivity::class.java)
-                    startActivity(intent)
-                    requireActivity().finish()
+                    // Navigate to Driver Container Fragment using Navigation Component
+                    findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_driverContainerFragment)
                 }
                 UserType.CUSTOMER -> {
-                    // TODO: Navigate to Customer Home when implemented
-                    // For now, do nothing
+                    // Navigate to Customer Container Fragment using Navigation Component
+                    findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_customerContainerFragment)
                 }
             }
         }
@@ -62,7 +58,6 @@ class LoginFragment : Fragment() {
     }
 
     private fun setupUserTypeToggle() {
-        // Set initial state - Driver is selected by default
         updateButtonStates(UserType.DRIVER)
 
         binding?.driverButton?.setOnClickListener {
