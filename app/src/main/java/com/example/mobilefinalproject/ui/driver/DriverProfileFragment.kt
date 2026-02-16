@@ -20,6 +20,7 @@ class DriverProfileFragment : Fragment() {
 
     private lateinit var driverNameTextView: TextView
     private lateinit var driverIdTextView: TextView
+    private lateinit var editProfileButton: Button
     private lateinit var logoutButton: Button
 
     override fun onCreateView(
@@ -34,11 +35,17 @@ class DriverProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         driverNameTextView = view.findViewById(R.id.driver_name_text_view)
         driverIdTextView = view.findViewById(R.id.driver_id_text_view)
+        editProfileButton = view.findViewById(R.id.edit_profile_button)
         logoutButton = view.findViewById(R.id.logout_button)
 
         driverViewModel.driver.observe(viewLifecycleOwner) { driver ->
             this.driver = driver
             updateUI()
+        }
+
+        // Setup edit profile button click listener
+        editProfileButton.setOnClickListener {
+            findNavController().navigate(R.id.action_driverProfileFragment_to_driverEditProfileFragment)
         }
 
         // Setup logout button click listener
