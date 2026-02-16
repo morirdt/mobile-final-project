@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login_title">Welcome to TruckBack</string>
+    <string name="login_subtitle">Login to continue</string>
+    <string name="driver">Driver</string>
+    <string name="customer">Customer</string>
+    <string name="id_number">ID Number</string>
+    <string name="enter_your_id">Enter your ID</string>
+    <string name="password">Password</string>
+    <string name="enter_phone_number">555-0123</string>
+    <string name="login">Login</string>
+    <string name="no_account">Don\'t have an account?</string>
+    <string name="register">Register</string>
+</resources>

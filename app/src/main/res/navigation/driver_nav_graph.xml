@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/driver_nav_graph"
+    app:startDestination="@id/driverActiveDeliveriesFragment">
+
+    <fragment
+        android:id="@+id/driverActiveDeliveriesFragment"
+        android:name="com.example.mobilefinalproject.ui.driver.DriverActiveDeliveriesFragment"
+        android:label="Active Deliveries"
+        tools:layout="@layout/fragment_driver_active_deliveries">
+    </fragment>
+
+    <fragment
+        android:id="@+id/driverCompletedDeliveriesFragment"
+        android:name="com.example.mobilefinalproject.ui.driver.DriverCompletedDeliveriesFragment"
+        android:label="Completed Deliveries"
+        tools:layout="@layout/fragment_driver_completed_deliveries" />
+
+    <fragment
+        android:id="@+id/driverFinderFragment"
+        android:name="com.example.mobilefinalproject.ui.driver.DriverFinderFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_driver_finder" />
+
+    <fragment
+        android:id="@+id/driverProfileFragment"
+        android:name="com.example.mobilefinalproject.ui.driver.DriverProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_driver_profile">
+        <action
+            android:id="@+id/action_driverProfileFragment_to_driverEditProfileFragment"
+            app:destination="@id/driverEditProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/driverEditProfileFragment"
+        android:name="com.example.mobilefinalproject.ui.driver.DriverEditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_driver_edit_profile" />
+
+</navigation>

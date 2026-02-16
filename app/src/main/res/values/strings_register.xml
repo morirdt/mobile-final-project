@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="register_title">Join TruckBack</string>
+    <string name="register_subtitle">Create your account</string>
+    <string name="full_name">Full Name</string>
+    <string name="enter_your_name">Enter your name</string>
+    <string name="email_optional">Email (Optional)</string>
+    <string name="enter_email">your@email.com</string>
+    <string name="create_account">Create Account</string>
+    <string name="already_have_account">Already have an account?</string>
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/customer_nav_graph"
+    app:startDestination="@id/customerHomeFragment">
+
+    <fragment
+        android:id="@+id/customerHomeFragment"
+        android:name="com.example.mobilefinalproject.ui.customer.CustomerHomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_customer_home" />
+
+    <fragment
+        android:id="@+id/customerNewOrderFragment"
+        android:name="com.example.mobilefinalproject.ui.customer.CustomerNewOrderFragment"
+        android:label="New Order"
+        tools:layout="@layout/fragment_customer_new_order" />
+
+    <fragment
+        android:id="@+id/customerMyOrdersFragment"
+        android:name="com.example.mobilefinalproject.ui.customer.CustomerMyOrdersFragment"
+        android:label="My Orders"
+        tools:layout="@layout/fragment_customer_my_orders" />
+
+    <fragment
+        android:id="@+id/customerProfileFragment"
+        android:name="com.example.mobilefinalproject.ui.customer.CustomerProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_customer_profile" />
+
+</navigation>
