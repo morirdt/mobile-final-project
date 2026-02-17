@@ -35,7 +35,8 @@ class DriverProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         driverNameTextView = view.findViewById(R.id.driver_name_text_view)
         driverIdTextView = view.findViewById(R.id.driver_id_text_view)
-        editProfileButton = view.findViewById(R.id.edit_profile_button)
+        editProfileButton = view.findViewById(R.id.edit_profile_icon_button
+        )
         logoutButton = view.findViewById(R.id.logout_button)
 
         driverViewModel.driver.observe(viewLifecycleOwner) { driver ->
