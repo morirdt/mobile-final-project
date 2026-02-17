@@ -69,11 +69,8 @@ class DriverEditProfileFragment : Fragment() {
         // Get current driver from ViewModel
         val currentDriver = driverViewModel.driver.value
         if (currentDriver != null) {
-            // Create updated driver with new name
             val updatedDriver = currentDriver.copy(fullName = updatedFullName)
-            // Update in ViewModel
             driverViewModel.updateDriver(updatedDriver)
-            // Navigate back to profile
             findNavController().navigateUp()
         }
     }

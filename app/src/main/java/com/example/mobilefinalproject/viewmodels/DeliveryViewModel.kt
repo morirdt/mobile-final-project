@@ -17,6 +17,12 @@ class DeliveryViewModel : ViewModel() {
     private val _completedDeliveries = MutableLiveData<List<Delivery>>()
     val completedDeliveries: LiveData<List<Delivery>> = _completedDeliveries
 
+    private val _customerDeliveries = MutableLiveData<List<Delivery>>()
+    val customerDeliveries: LiveData<List<Delivery>> = _customerDeliveries
+
+    fun getDeliveriesByCustomer(customerId: String): List<Delivery> {
+        return _deliveries.value?.filter { it.customerId == customerId } ?: emptyList()
+    }
     fun setDeliveries(deliveries: List<Delivery>) {
         _deliveries.value = deliveries
     }
@@ -28,6 +34,11 @@ class DeliveryViewModel : ViewModel() {
     fun setCompletedDeliveries(completedDeliveries: List<Delivery>) {
         _completedDeliveries.value = completedDeliveries
     }
+
+    fun setCustomerDeliveries(customerDeliveries: List<Delivery>) {
+        _customerDeliveries.value = customerDeliveries
+    }
+
 
     fun addDelivery(delivery: Delivery) {
         val currentList = _deliveries.value?.toMutableList() ?: mutableListOf()

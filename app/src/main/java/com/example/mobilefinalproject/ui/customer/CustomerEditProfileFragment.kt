@@ -69,11 +69,8 @@ class CustomerEditProfileFragment : Fragment() {
         // Get current customer from ViewModel
         val currentCustomer = customerViewModel.customer.value
         if (currentCustomer != null) {
-            // Create updated customer with new name
             val updatedCustomer = currentCustomer.copy(fullName = updatedFullName)
-            // Update in ViewModel
             customerViewModel.updateCustomer(updatedCustomer)
-            // Navigate back to profile
             findNavController().navigateUp()
         }
     }

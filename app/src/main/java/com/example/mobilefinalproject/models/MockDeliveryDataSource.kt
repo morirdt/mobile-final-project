@@ -1,7 +1,5 @@
 package com.example.mobilefinalproject.models
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import java.util.Date
 
 object MockDeliveryDataSource {
@@ -9,6 +7,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "1",
             customerName = "Sarah Johnson",
+            customerId = "123456789",
             status = DeliveryStatus.PENDING.label,
             price = 45.00,
             date = Date(),
@@ -20,6 +19,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "2",
             customerName = "Mike Chen",
+            customerId = "123456789",
             status = DeliveryStatus.ACCEPTED.label,
             price = 30.00,
             date = Date(),
@@ -32,6 +32,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "3",
             customerName = "Lisa Martinez",
+            customerId = "123456789",
             status = DeliveryStatus.IN_PROGRESS.label,
             price = 40.00,
             date = Date(),
@@ -44,6 +45,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "4",
             customerName = "Mori Arditi",
+            customerId = "11111111",
             status = DeliveryStatus.COMPLETED.label,
             price = 40.00,
             date = Date(),
@@ -63,6 +65,9 @@ object MockDeliveryDataSource {
 
     fun getCompletedDeliveries(): List<Delivery> =
         deliveries.filter { it.status == DeliveryStatus.COMPLETED.label }
+
+    fun getDeliveriesByCustomer(customerId: String): List<Delivery> =
+        deliveries.filter { it.customerId == customerId }
 
 
 }
