@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.models.customer.Customer
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -33,6 +34,14 @@ class CustomerContainerFragment : Fragment() {
 
         bottomNavigation = view.findViewById(R.id.customer_bottom_navigation)
 
+
+        // TODO: Get driver from arguments or authentication
+        val customer = Customer("123456789", "John Customer")
+
+        // Set customer in ViewModel (accessible throughout the app)
+        customerViewModel.setCustomer(customer)
+
+
         // Get NavController from nested NavHostFragment
         val navHostFragment = childFragmentManager
             .findFragmentById(R.id.customer_nav_host_fragment) as NavHostFragment
@@ -40,5 +49,17 @@ class CustomerContainerFragment : Fragment() {
 
         // Setup automatic navigation using customer_nav_graph
         bottomNavigation.setupWithNavController(navController)
+
+        // Hide bottom navigation on edit profile screen
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.customerEditProfileFragment -> {
+                    bottomNavigation.visibility = View.GONE
+                }
+                else -> {
+                    bottomNavigation.visibility = View.VISIBLE
+                }
+            }
+        }
     }
 }
