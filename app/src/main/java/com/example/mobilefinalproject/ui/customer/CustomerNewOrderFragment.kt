@@ -2,13 +2,18 @@ package com.example.mobilefinalproject.ui.customer
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
 import com.example.mobilefinalproject.databinding.FragmentCustomerNewOrderBinding
 import com.example.mobilefinalproject.model.Location
 import com.google.android.libraries.places.api.Places
@@ -24,6 +29,7 @@ class CustomerNewOrderFragment : Fragment() {
     private var binding: FragmentCustomerNewOrderBinding? = null
     private var pickupLocation: Location? = null
     private var destinationLocation: Location? = null
+    private var selectedImageUri: Uri? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +52,35 @@ class CustomerNewOrderFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupAddressPickers()
         setupDateTimePickers()
+        setupImagePicker()
+    }
+
+    // Permission request launcher
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            // Permission granted, open image picker
+            imagePickerLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        } else {
+            Log.e("NewOrder", "Gallery permission denied")
+        }
+    }
+
+    // Image picker launcher
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            selectedImageUri = it
+            binding?.customerNewOrderImagePreview?.apply {
+                setImageURI(selectedImageUri)
+                visibility = View.VISIBLE
+            }
+            Log.d("NewOrder", "Image selected: $it")
+        }
     }
 
     private val pickupAddressLauncher = registerForActivityResult(
@@ -158,6 +193,32 @@ class CustomerNewOrderFragment : Fragment() {
         binding?.customerNewOrderPickupTimeEditText?.setOnClickListener {
             showTimePicker { time ->
                 binding?.customerNewOrderPickupTimeEditText?.setText(time)
+            }
+        }
+    }
+
+    private fun setupImagePicker() {
+        binding?.customerNewOrderAddImageButton?.setOnClickListener {
+            checkAndRequestGalleryPermission()
+        }
+    }
+
+    private fun checkAndRequestGalleryPermission() {
+        val permission = android.Manifest.permission.READ_MEDIA_IMAGES
+
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                // Permission already granted, open image picker
+                imagePickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+            else -> {
+                // Request permission
+                permissionLauncher.launch(permission)
             }
         }
     }
