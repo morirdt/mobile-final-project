@@ -32,7 +32,7 @@
 
     <!-- Deliveries List RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/my_orders_recycler_view"
+        android:id="@+id/customer_my_orders_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingHorizontal="16dp" />

@@ -30,14 +30,14 @@ class FinderDeliveryAdapter(
         private val priceTextView: TextView = itemView.findViewById(R.id.finder_delivery_price_text_view)
         private val timeTextView: TextView = itemView.findViewById(R.id.finder_delivery_time_text_view)
         private val pickupAddressTextView: TextView = itemView.findViewById(R.id.finder_delivery_pickup_address_text_view)
-        private val dropoffAddressTextView: TextView = itemView.findViewById(R.id.finder_delivery_dropoff_address_text_view)
+        private val destinationAddressTextView: TextView = itemView.findViewById(R.id.finder_delivery_destination_address_text_view)
 
         fun bind(item: Delivery) {
             customerNameTextView.text = item.customerName
             priceTextView.text = String.format("$%.2f", item.price)
             timeTextView.text = SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(item.date)
             pickupAddressTextView.text = item.pickupAddress
-            dropoffAddressTextView.text = item.dropoffAddress
+            destinationAddressTextView.text = item.destinationAddress
         }
     }
 }

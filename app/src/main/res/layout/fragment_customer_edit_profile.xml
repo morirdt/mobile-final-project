@@ -26,7 +26,7 @@
             android:padding="16dp">
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/edit_profile_image_view"
+                android:id="@+id/customer_edit_profile_image_view"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:background="@color/teal_700"
@@ -62,7 +62,7 @@
         app:boxStrokeColor="?attr/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_full_name_input"
+            android:id="@+id/customer_edit_profile_full_name_edit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="text"
@@ -93,7 +93,7 @@
         app:boxStrokeColor="?attr/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_customer_id_input"
+            android:id="@+id/customer_edit_profile_id_edit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:enabled="false"
@@ -105,7 +105,7 @@
 
     <!-- Save Button -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/save_profile_button"
+        android:id="@+id/customer_edit_profile_save_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -117,7 +117,7 @@
 
     <!-- Cancel Button -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/cancel_edit_button"
+        android:id="@+id/customer_edit_profile_cancel_button"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

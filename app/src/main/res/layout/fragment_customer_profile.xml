@@ -25,9 +25,9 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
+                android:padding="16dp">
 
                 <!-- Profile Picture Container -->
                 <FrameLayout
@@ -36,7 +36,7 @@
 
                     <!-- Profile Picture -->
                     <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/profile_image_view"
+                        android:id="@+id/customer_profile_image_view"
                         android:layout_width="64dp"
                         android:layout_height="64dp"
                         android:background="@color/teal_700"
@@ -66,7 +66,7 @@
                     android:orientation="vertical">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/customer_name_text_view"
+                        android:id="@+id/customer_profile_name_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="John customer"
@@ -74,7 +74,7 @@
                         android:textColor="?attr/colorOnSurface" />
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/customer_id_text_view"
+                        android:id="@+id/customer_profile_id_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -108,9 +108,7 @@
                                 android:text="Customer"
                                 android:textAppearance="?attr/textAppearanceLabelSmall"
                                 android:textColor="@color/white" />
-
                         </com.google.android.material.card.MaterialCardView>
-
 
                     </LinearLayout>
 
@@ -119,27 +117,21 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
                         android:orientation="vertical">
-
-
-
                     </LinearLayout>
-
                 </LinearLayout>
 
                 <!-- Edit Profile Button (Square) -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/edit_profile_icon_button"
+                    android:id="@+id/customer_profile_edit_button"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginStart="8dp"
-                    app:strokeColor="@color/teal_700"
-                    app:strokeWidth="2dp"
-
                     app:cornerRadius="4dp"
                     app:icon="@drawable/ic_edit"
-
-                    app:iconTint="@color/teal_700" />
+                    app:iconTint="@color/teal_700"
+                    app:strokeColor="@color/teal_700"
+                    app:strokeWidth="2dp" />
 
             </LinearLayout>
 
@@ -148,7 +140,7 @@
 
         <!-- Logout Button -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/logout_button"
+            android:id="@+id/customer_profile_logout_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"

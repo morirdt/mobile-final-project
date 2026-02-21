@@ -10,7 +10,7 @@ data class Delivery(
     val price: Double,
     val date: Date,
     val pickupAddress: String,
-    val dropoffAddress: String,
+    val destinationAddress: String,
     val phoneNumber: String,
     val rating: Int,
 )

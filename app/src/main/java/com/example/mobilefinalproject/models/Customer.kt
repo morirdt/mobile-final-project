@@ -1,4 +1,4 @@
-package com.example.mobilefinalproject.models.customer
+package com.example.mobilefinalproject.models
 
 data class Customer(
     val id: String,

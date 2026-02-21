@@ -31,7 +31,7 @@ class CompletedDeliveryAdapter(
         private val priceTextView: TextView = itemView.findViewById(R.id.completed_delivery_price_text_view)
         private val timeTextView: TextView = itemView.findViewById(R.id.completed_delivery_time_text_view)
         private val pickupAddressTextView: TextView = itemView.findViewById(R.id.completed_delivery_pickup_address_text_view)
-        private val dropoffAddressTextView: TextView = itemView.findViewById(R.id.completed_delivery_dropoff_address_text_view)
+        private val destinationAddressTextView: TextView = itemView.findViewById(R.id.completed_delivery_destination_address_text_view)
         private val ratingBar: RatingBar = itemView.findViewById(R.id.completed_delivery_rating_bar)
 
         fun bind(item: Delivery) {
@@ -39,7 +39,7 @@ class CompletedDeliveryAdapter(
             priceTextView.text = String.format("$%.2f", item.price)
             timeTextView.text = SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(item.date)
             pickupAddressTextView.text = item.pickupAddress
-            dropoffAddressTextView.text = item.dropoffAddress
+            destinationAddressTextView.text = item.destinationAddress
             ratingBar.rating = item.rating.toFloat()
         }
     }

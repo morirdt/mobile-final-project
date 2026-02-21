@@ -27,8 +27,8 @@ class ActiveDeliveryAdapter(private val deliveries: List<Delivery>) :
             itemView.findViewById(R.id.active_delivery_status_badge_linear_layout)
         private val pickupAddressTextView: TextView =
             itemView.findViewById(R.id.active_delivery_pickup_address_time_text_view)
-        private val dropoffAddressTextView: TextView =
-            itemView.findViewById(R.id.active_delivery_dropoff_address_text_view)
+        private val destinationAddressTextView: TextView =
+            itemView.findViewById(R.id.active_delivery_destination_address_text_view)
         private val phoneTextView: TextView = itemView.findViewById(R.id.active_delivery_customer_phone_text_view)
         private val buttonsContainer: LinearLayout =
             itemView.findViewById(R.id.active_delivery_buttons_container_linear_layout)
@@ -51,7 +51,7 @@ class ActiveDeliveryAdapter(private val deliveries: List<Delivery>) :
                 delivery.pickupAddress + " • " + SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(
                     delivery.date
                 )
-            dropoffAddressTextView.text = delivery.dropoffAddress
+            destinationAddressTextView.text = delivery.destinationAddress
 
             setupActionButtons(delivery)
         }

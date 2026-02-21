@@ -30,7 +30,7 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/customer_delivery_customer_name_text_view"
+                    android:id="@+id/customer_delivery_name_text_view"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -58,7 +58,7 @@
 
 
                 <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/customer_delivery_time_text_view"
+                    android:id="@+id/customer_delivery_date_time_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="2025-12-27 | 10:00"
@@ -147,7 +147,7 @@
                                 android:textColor="?attr/colorOnSurfaceVariant" />
 
                             <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/customer_delivery_dropoff_address_text_view"
+                                android:id="@+id/customer_delivery_destination_address_text_view"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
@@ -168,10 +168,14 @@
                     android:layout_weight="0.25"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Image!" />
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/customer_delivery_image_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@color/teal_700"
+                        android:contentDescription="Load Image"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_person" />
 
                 </LinearLayout>
             </LinearLayout>

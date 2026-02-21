@@ -12,7 +12,7 @@ object MockDeliveryDataSource {
             price = 45.00,
             date = Date(),
             pickupAddress = "123 Main St, Downtown",
-            dropoffAddress = "456 Oak Ave, Uptown",
+            destinationAddress = "456 Oak Ave, Uptown",
             phoneNumber = "+1-555-0199",
             rating = 0,
         ),
@@ -24,7 +24,7 @@ object MockDeliveryDataSource {
             price = 30.00,
             date = Date(),
             pickupAddress = "789 Pine Rd, West Side",
-            dropoffAddress = "321 Elm St, East Side",
+            destinationAddress = "321 Elm St, East Side",
             phoneNumber = "+1-555-0188",
             rating = 0,
 
@@ -37,7 +37,7 @@ object MockDeliveryDataSource {
             price = 40.00,
             date = Date(),
             pickupAddress = "890 Cedar Blvd, North",
-            dropoffAddress = "432 Maple Dr, South",
+            destinationAddress = "432 Maple Dr, South",
             phoneNumber = "+1-555-0166",
             rating = 0,
 
@@ -50,7 +50,7 @@ object MockDeliveryDataSource {
             price = 40.00,
             date = Date(),
             pickupAddress = "890 Cedar Blvd, North",
-            dropoffAddress = "432 Maple Dr, South",
+            destinationAddress = "432 Maple Dr, South",
             phoneNumber = "+1-555-6767",
             rating = 5,
 
