@@ -9,11 +9,14 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.databinding.FragmentDriverContainerBinding
 import com.example.mobilefinalproject.models.driver.Driver
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class DriverContainerFragment : Fragment() {
+
+    private var binding: FragmentDriverContainerBinding? = null
 
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var driverViewModel: DriverViewModel
@@ -23,16 +26,15 @@ class DriverContainerFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_driver_container, container, false)
+        binding = FragmentDriverContainerBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize ViewModel at activity scope (shared across all fragments)
+        // Initialize ViewModel at activity scope
         driverViewModel = ViewModelProvider(requireActivity())[DriverViewModel::class.java]
-
-        bottomNavigation = view.findViewById(R.id.driver_bottom_navigation)
 
         // TODO: Get driver from arguments or authentication
         val driver = Driver("123456789", "John Driver")
@@ -41,21 +43,22 @@ class DriverContainerFragment : Fragment() {
         driverViewModel.setDriver(driver)
 
         // Get NavController from nested NavHostFragment
-        val navHostFragment = childFragmentManager
-            .findFragmentById(R.id.driver_nav_host_fragment) as NavHostFragment
+        val navHostFragment = binding?.let {
+            childFragmentManager.findFragmentById(it.driverNavHostFragment.id) as NavHostFragment
+        } ?: return
         val navController = navHostFragment.navController
 
         // Setup automatic navigation using driver_nav_graph
-        bottomNavigation.setupWithNavController(navController)
+        binding?.driverBottomNavigation?.setupWithNavController(navController)
 
-        // Hide bottom navigation for edit profile fragment
+        // Hide bottom navigation on edit profile screen
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.driverEditProfileFragment -> {
-                    bottomNavigation.visibility = View.GONE
+                    binding?.driverBottomNavigation?.visibility = View.GONE
                 }
                 else -> {
-                    bottomNavigation.visibility = View.VISIBLE
+                    binding?.driverBottomNavigation?.visibility = View.VISIBLE
                 }
             }
         }

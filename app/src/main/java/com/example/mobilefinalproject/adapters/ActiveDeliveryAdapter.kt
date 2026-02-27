@@ -8,56 +8,57 @@ import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.databinding.ItemDriverActiveDeliveryBinding
 import com.example.mobilefinalproject.models.Delivery
 import com.example.mobilefinalproject.models.driver.ButtonConfig
 import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
 import com.google.android.material.card.MaterialCardView
 import java.text.SimpleDateFormat
 
-class ActiveDeliveryAdapter(private val deliveries: List<Delivery>) :
-    RecyclerView.Adapter<ActiveDeliveryAdapter.DeliveryViewHolder>() {
+class ActiveDeliveryAdapter(var deliveries: List<Delivery>?) :
+    RecyclerView.Adapter<ActiveDeliveryAdapter.ActiveDeliveryViewHolder>() {
+    override fun getItemCount(): Int = deliveries?.size ?: 0
 
-    inner class DeliveryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val cardView: MaterialCardView =
-            itemView.findViewById(R.id.active_delivery_material_card_view)
-        private val customerNameTextView: TextView =
-            itemView.findViewById(R.id.active_delivery_customer_name_text_view)
-        private val statusTextView: TextView = itemView.findViewById(R.id.active_delivery_status_text_view)
-        private val statusBadge: LinearLayout =
-            itemView.findViewById(R.id.active_delivery_status_badge_linear_layout)
-        private val pickupAddressTextView: TextView =
-            itemView.findViewById(R.id.active_delivery_pickup_address_time_text_view)
-        private val destinationAddressTextView: TextView =
-            itemView.findViewById(R.id.active_delivery_destination_address_text_view)
-        private val phoneTextView: TextView = itemView.findViewById(R.id.active_delivery_customer_phone_text_view)
-        private val buttonsContainer: LinearLayout =
-            itemView.findViewById(R.id.active_delivery_buttons_container_linear_layout)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActiveDeliveryViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = ItemDriverActiveDeliveryBinding.inflate(inflater, parent, false)
+        return ActiveDeliveryViewHolder(binding = binding)
+    }
 
-        fun bind(delivery: Delivery) {
-            customerNameTextView.text = delivery.customerName
-            phoneTextView.text = delivery.phoneNumber
-            statusTextView.text = delivery.status
+    override fun onBindViewHolder(holder: ActiveDeliveryViewHolder, position: Int) {
+        deliveries?.let {
+            holder.bind(it[position], position)
+        }
+    }
 
-            cardView.strokeColor =
+    class ActiveDeliveryViewHolder(private val binding: ItemDriverActiveDeliveryBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(delivery: Delivery, position: Int) {
+            binding.activeDeliveryCustomerNameTextView.text = delivery.customerName
+            binding.activeDeliveryCustomerPhoneTextView.text = delivery.phoneNumber
+            binding.activeDeliveryStatusTextView.text = delivery.status
+            binding.activeDeliveryMaterialCardView.strokeColor =
                 activeDeliveryConfigs[delivery.status]?.strokeColor?.toColorInt()
                     ?: "#FFC107".toColorInt()
-            cardView.strokeWidth = 2.dpToPx()
 
-            statusBadge.setBackgroundResource(
+            binding.activeDeliveryMaterialCardView.strokeWidth = 2.dpToPx()
+
+            binding.activeDeliveryStatusBadgeLinearLayout.setBackgroundResource(
                 activeDeliveryConfigs[delivery.status]?.badgeDrawable ?: R.drawable.badge_pending
             )
 
-            pickupAddressTextView.text =
+            binding.activeDeliveryPickupAddressTimeTextView.text =
                 delivery.pickupAddress + " • " + SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(
                     delivery.date
                 )
-            destinationAddressTextView.text = delivery.destinationAddress
+
+            binding.activeDeliveryDestinationAddressTextView.text = delivery.destinationAddress
 
             setupActionButtons(delivery)
         }
 
         private fun setupActionButtons(delivery: Delivery) {
-            buttonsContainer.removeAllViews()
+            binding.activeDeliveryButtonsContainerLinearLayout.removeAllViews()
             val buttons: List<ButtonConfig> =
                 activeDeliveryConfigs[delivery.status]?.buttons ?: emptyList()
             buttons.forEach { buttonConfig ->
@@ -89,7 +90,7 @@ class ActiveDeliveryAdapter(private val deliveries: List<Delivery>) :
             }
 
             button.addView(textView)
-            buttonsContainer.addView(button)
+            binding.activeDeliveryButtonsContainerLinearLayout.addView(button)
         }
 
         private fun Int.dpToPx(): Int {
@@ -97,15 +98,5 @@ class ActiveDeliveryAdapter(private val deliveries: List<Delivery>) :
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeliveryViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_driver_active_delivery, parent, false)
-        return DeliveryViewHolder(view)
-    }
 
-    override fun onBindViewHolder(holder: DeliveryViewHolder, position: Int) {
-        holder.bind(deliveries[position])
-    }
-
-    override fun getItemCount(): Int = deliveries.size
 }

@@ -66,7 +66,7 @@
                     android:orientation="vertical">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/driver_name_text_view"
+                        android:id="@+id/driver_profile_name_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="John Driver"
@@ -74,7 +74,7 @@
                         android:textColor="?attr/colorOnSurface" />
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/driver_id_text_view"
+                        android:id="@+id/driver_profile_id_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -138,7 +138,7 @@
                                     android:textSize="12sp" />
 
                                 <com.google.android.material.textview.MaterialTextView
-                                    android:id="@+id/driver_rating_text_view"
+                                    android:id="@+id/driver_profile_rating_text_view"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="4dp"
@@ -167,7 +167,7 @@
 
                 <!-- Edit Profile Button (Square) -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/edit_profile_icon_button"
+                    android:id="@+id/driver_profile_edit_button"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
@@ -187,7 +187,7 @@
 
         <!-- Logout Button -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/logout_button"
+            android:id="@+id/driver_profile_logout_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"

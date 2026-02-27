@@ -17,6 +17,9 @@ class DeliveryViewModel : ViewModel() {
     private val _completedDeliveries = MutableLiveData<List<Delivery>>()
     val completedDeliveries: LiveData<List<Delivery>> = _completedDeliveries
 
+    private val _pendingDeliveries = MutableLiveData<List<Delivery>>()
+    val pendingDeliveries: LiveData<List<Delivery>> = _pendingDeliveries
+
     private val _customerDeliveries = MutableLiveData<List<Delivery>>()
     val customerDeliveries: LiveData<List<Delivery>> = _customerDeliveries
 
@@ -37,6 +40,10 @@ class DeliveryViewModel : ViewModel() {
 
     fun setCustomerDeliveries(customerDeliveries: List<Delivery>) {
         _customerDeliveries.value = customerDeliveries
+    }
+
+    fun setPendingDeliveries(pendingDeliveries: List<Delivery>) {
+        _pendingDeliveries.value = pendingDeliveries
     }
 
 

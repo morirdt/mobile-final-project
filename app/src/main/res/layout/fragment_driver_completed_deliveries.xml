@@ -123,7 +123,7 @@
 
     <!-- Deliveries List RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/completed_deliveries_recycler_view"
+        android:id="@+id/driver_completed_deliveries_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingHorizontal="16dp" />

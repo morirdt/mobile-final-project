@@ -1,43 +1,42 @@
-package com.example.mobilefinalproject.ui.driver
+package com.example.mobilefinalproject.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.databinding.ItemDriverFinderDeliveryBinding
 import com.example.mobilefinalproject.models.Delivery
 import java.text.SimpleDateFormat
 
 class FinderDeliveryAdapter(
-    private val items: List<Delivery>
+    var deliveries: List<Delivery>?
 ) : RecyclerView.Adapter<FinderDeliveryAdapter.FinderDeliveryViewHolder>() {
+    override fun getItemCount(): Int = deliveries?.size ?: 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FinderDeliveryViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_driver_finder_delivery, parent, false)
-        return FinderDeliveryViewHolder(view)
+        val inflater = LayoutInflater.from(parent.context)
+        val binding = ItemDriverFinderDeliveryBinding.inflate(inflater, parent, false)
+        return FinderDeliveryViewHolder(binding = binding)
     }
 
-    override fun onBindViewHolder(holder: FinderDeliveryViewHolder, position: Int) {
-        holder.bind(items[position])
+    override fun onBindViewHolder(
+        holder: FinderDeliveryViewHolder,
+        position: Int
+    ) {
+        deliveries?.let {
+            holder.bind(it[position], position)
+        }
     }
 
-    override fun getItemCount(): Int = items.size
-
-    class FinderDeliveryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val customerNameTextView: TextView = itemView.findViewById(R.id.finder_delivery_customer_name_text_view)
-        private val priceTextView: TextView = itemView.findViewById(R.id.finder_delivery_price_text_view)
-        private val timeTextView: TextView = itemView.findViewById(R.id.finder_delivery_time_text_view)
-        private val pickupAddressTextView: TextView = itemView.findViewById(R.id.finder_delivery_pickup_address_text_view)
-        private val destinationAddressTextView: TextView = itemView.findViewById(R.id.finder_delivery_destination_address_text_view)
-
-        fun bind(item: Delivery) {
-            customerNameTextView.text = item.customerName
-            priceTextView.text = String.format("$%.2f", item.price)
-            timeTextView.text = SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(item.date)
-            pickupAddressTextView.text = item.pickupAddress
-            destinationAddressTextView.text = item.destinationAddress
+    class FinderDeliveryViewHolder(private val binding: ItemDriverFinderDeliveryBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: Delivery, position: Int) {
+            binding.finderDeliveryCustomerNameTextView.text = item.customerName
+            binding.finderDeliveryPriceTextView.text = String.format("$%.2f", item.price)
+            binding.finderDeliveryTimeTextView.text = SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(item.date)
+            binding.finderDeliveryPickupAddressTextView.text = item.pickupAddress
+            binding.finderDeliveryDestinationAddressTextView.text = item.destinationAddress
         }
     }
 }
