@@ -1,20 +1,52 @@
 package com.example.mobilefinalproject.ui.customer
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
+import com.squareup.picasso.Picasso
 
 class CustomerEditProfileFragment : Fragment() {
 
     private val customerViewModel: CustomerViewModel by activityViewModels()
     private var binding: FragmentCustomerEditProfileBinding? = null
+    private var selectedImageUri: Uri? = null
+
+    // Image picker launcher
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let {
+            selectedImageUri = it
+            binding?.customerEditProfileImageView?.let { imageView ->
+                Picasso.get()
+                    .load(selectedImageUri)
+                    .into(imageView)
+            }
+        }
+    }
+
+    // Permission request launcher
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            imagePickerLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,6 +75,32 @@ class CustomerEditProfileFragment : Fragment() {
 
         binding?.customerEditProfileCancelButton?.setOnClickListener {
             findNavController().navigateUp()
+        }
+
+        binding?.customerEditProfileChangePictureButton?.setOnClickListener {
+            checkAndRequestGalleryPermission()
+        }
+    }
+
+    private fun checkAndRequestGalleryPermission() {
+        val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                imagePickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+            else -> {
+                permissionLauncher.launch(permission)
+            }
         }
     }
 

@@ -36,6 +36,21 @@
                 app:shapeAppearanceOverlay="@style/CircleImageView"
                 android:layout_gravity="center"/>
 
+            <!-- Change Profile Picture Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/customer_edit_profile_change_picture_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="12dp"
+                android:text="Change Picture"
+                android:textAllCaps="false"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:textColor="@color/teal_700"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/teal_700"
+                app:strokeWidth="1dp" />
+
         </LinearLayout>
 
 

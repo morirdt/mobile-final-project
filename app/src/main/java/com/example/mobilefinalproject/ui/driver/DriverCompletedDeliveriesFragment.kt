@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.adapters.CompletedDeliveryAdapter
 import com.example.mobilefinalproject.databinding.FragmentDriverCompletedDeliveriesBinding
 import com.example.mobilefinalproject.models.MockDeliveryDataSource
 import com.example.mobilefinalproject.viewmodels.DeliveryViewModel

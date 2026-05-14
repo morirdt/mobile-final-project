@@ -15,7 +15,13 @@
         android:id="@+id/customerNewOrderFragment"
         android:name="com.example.mobilefinalproject.ui.customer.CustomerNewOrderFragment"
         android:label="New Order"
-        tools:layout="@layout/fragment_customer_new_order" />
+        tools:layout="@layout/fragment_customer_new_order">
+        <action
+            android:id="@+id/action_customerNewOrderFragment_to_customerHomeFragment"
+            app:destination="@id/customerHomeFragment"
+            app:popUpTo="@id/customerHomeFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/customerMyOrdersFragment"

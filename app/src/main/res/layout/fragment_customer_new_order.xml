@@ -84,7 +84,7 @@
                         android:layout_height="wrap_content"
                         android:clickable="true"
                         android:focusable="false"
-                        android:hint="Pickup address..."
+                        android:hint="Pickup address... *"
                         android:inputType="none"
                         android:textColor="@color/black"
                         android:textColorHint="@color/gray_700"
@@ -112,7 +112,7 @@
                         android:layout_height="wrap_content"
                         android:clickable="true"
                         android:focusable="false"
-                        android:hint="Destination address..."
+                        android:hint="Destination address... *"
                         android:inputType="none"
                         android:textColor="@color/black"
                         android:textColorHint="@color/gray_700"
@@ -141,6 +141,7 @@
                             android:textStyle="bold" />
 
                         <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/customer_new_order_pickup_date_layout"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -156,7 +157,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:focusable="false"
-                                android:hint="DD/MM/YYYY"
+                                android:hint="DD/MM/YYYY *"
                                 android:inputType="none"
                                 android:textColor="@color/black"
                                 android:textColorHint="@color/gray_700"
@@ -196,7 +197,7 @@
                                 android:layout_height="wrap_content"
                                 android:clickable="true"
                                 android:focusable="false"
-                                android:hint="HH:MM"
+                                android:hint="HH:MM *"
                                 android:inputType="none"
                                 android:textColor="@color/black"
                                 android:textColorHint="@color/gray_700"
@@ -207,7 +208,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Add Image Card -->
+        <!-- Package Details Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -224,14 +225,39 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Add Image Header -->
+                <!-- Package Details Header -->
                 <com.google.android.material.textview.MaterialTextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Package Image"
+                    android:text="Package Details"
                     android:textColor="@color/teal_700"
                     android:textSize="16sp"
                     android:textStyle="bold" />
+
+                <!-- Order Description -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/customer_new_order_description_layout"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxStrokeColor="@color/teal_700">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/customer_new_order_description_edit_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Describe your package... *"
+                        android:inputType="textMultiLine"
+                        android:lines="2"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/gray_700"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Add Image Button -->
                 <com.google.android.material.button.MaterialButton
@@ -240,6 +266,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:text="Add Image"
+                    android:textAllCaps="false"
                     android:textColor="@color/teal_700"
                     app:cornerRadius="8dp"
                     app:iconTint="@color/teal_700"
@@ -255,10 +282,100 @@
                     android:layout_marginTop="12dp"
                     android:scaleType="centerInside"
                     android:contentDescription="Package image preview"
-                    android:visibility="gone"
-                    android:background="@color/teal_200" />
+                    android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Budget Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/teal_200"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Budget Header -->
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Budget"
+                    android:textColor="@color/teal_700"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <!-- Budget Amount -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/customer_new_order_budget_layout"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:boxCornerRadiusBottomEnd="8dp"
+                    app:boxCornerRadiusBottomStart="8dp"
+                    app:boxCornerRadiusTopEnd="8dp"
+                    app:boxCornerRadiusTopStart="8dp"
+                    app:boxStrokeColor="@color/teal_700"
+                    app:prefixText="$">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/customer_new_order_budget_edit_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Enter budget amount *"
+                        android:inputType="numberDecimal"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/gray_700"
+                        android:textSize="14sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Buttons Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Cancel Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/customer_new_order_cancel_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Cancel"
+                android:textAllCaps="false"
+                android:textColor="@color/teal_700"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/teal_700"
+                app:strokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <!-- Submit Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/customer_new_order_submit_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Submit Order"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/teal_700"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

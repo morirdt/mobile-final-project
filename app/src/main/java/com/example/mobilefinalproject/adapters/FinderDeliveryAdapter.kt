@@ -2,12 +2,11 @@ package com.example.mobilefinalproject.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.ItemDriverFinderDeliveryBinding
 import com.example.mobilefinalproject.models.Delivery
 import java.text.SimpleDateFormat
+import java.util.Locale
 
 class FinderDeliveryAdapter(
     var deliveries: List<Delivery>?
@@ -25,20 +24,19 @@ class FinderDeliveryAdapter(
         position: Int
     ) {
         deliveries?.let {
-            holder.bind(it[position], position)
+            holder.bind(it[position])
         }
     }
 
     class FinderDeliveryViewHolder(private val binding: ItemDriverFinderDeliveryBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Delivery, position: Int) {
+        fun bind(item: Delivery) {
             binding.finderDeliveryCustomerNameTextView.text = item.customerName
-            binding.finderDeliveryPriceTextView.text = String.format("$%.2f", item.price)
-            binding.finderDeliveryTimeTextView.text = SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(item.date)
-            binding.finderDeliveryPickupAddressTextView.text = item.pickupAddress
-            binding.finderDeliveryDestinationAddressTextView.text = item.destinationAddress
+            binding.finderDeliveryPriceTextView.text = String.format(Locale.getDefault(), "$%.2f", item.price)
+            binding.finderDeliveryTimeTextView.text =
+                SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()).format(item.date)
+            binding.finderDeliveryPickupAddressTextView.text = item.pickupLocation.address
+            binding.finderDeliveryDestinationAddressTextView.text = item.destinationLocation.address
         }
     }
 }
-
-

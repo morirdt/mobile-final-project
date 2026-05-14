@@ -1,15 +1,12 @@
-package com.example.mobilefinalproject.ui.driver
+package com.example.mobilefinalproject.adapters
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.RatingBar
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.ItemDriverCompletedDeliveryBinding
 import com.example.mobilefinalproject.models.Delivery
 import java.text.SimpleDateFormat
+import java.util.Locale
 
 class CompletedDeliveryAdapter(
     var deliveries: List<Delivery>?
@@ -25,22 +22,20 @@ class CompletedDeliveryAdapter(
 
     override fun onBindViewHolder(holder: CompletedDeliveryViewHolder, position: Int) {
         deliveries?.let {
-            holder.bind(it[position], position)
+            holder.bind(it[position])
         }
     }
 
     class CompletedDeliveryViewHolder(private val binding: ItemDriverCompletedDeliveryBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Delivery, position: Int) {
+        fun bind(item: Delivery) {
             binding.completedDeliveryCustomerNameTextView.text = item.customerName
-            binding.completedDeliveryPriceTextView.text = String.format("$%.2f", item.price)
+            binding.completedDeliveryPriceTextView.text = String.format(Locale.getDefault(), "$%.2f", item.price)
             binding.completedDeliveryTimeTextView.text =
-                SimpleDateFormat("dd/MM/yyyy \u2022 HH:mm").format(item.date)
-            binding.completedDeliveryPickupAddressTextView.text = item.pickupAddress
-            binding.completedDeliveryDestinationAddressTextView.text = item.destinationAddress
+                SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()).format(item.date)
+            binding.completedDeliveryPickupAddressTextView.text = item.pickupLocation.address
+            binding.completedDeliveryDestinationAddressTextView.text = item.destinationLocation.address
             binding.completedDeliveryRatingBar.rating = item.rating.toFloat()
-
-
         }
     }
 }

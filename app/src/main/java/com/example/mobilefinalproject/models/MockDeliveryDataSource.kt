@@ -3,7 +3,7 @@ package com.example.mobilefinalproject.models
 import java.util.Date
 
 object MockDeliveryDataSource {
-    val deliveries: List<Delivery> = listOf(
+    val deliveries: MutableList<Delivery> = mutableListOf(
         Delivery(
             id = "1",
             customerName = "Sarah Johnson",
@@ -11,9 +11,8 @@ object MockDeliveryDataSource {
             status = DeliveryStatus.PENDING.label,
             price = 45.00,
             date = Date(),
-            pickupAddress = "123 Main St, Downtown",
-            destinationAddress = "456 Oak Ave, Uptown",
-            phoneNumber = "+1-555-0199",
+            pickupLocation = Location("123 Main St, Downtown", 40.7128, -74.0060),
+            destinationLocation = Location("456 Oak Ave, Uptown", 40.7306, -73.9866),
             rating = 0,
         ),
         Delivery(
@@ -23,12 +22,10 @@ object MockDeliveryDataSource {
             status = DeliveryStatus.ACCEPTED.label,
             price = 30.00,
             date = Date(),
-            pickupAddress = "789 Pine Rd, West Side",
-            destinationAddress = "321 Elm St, East Side",
-            phoneNumber = "+1-555-0188",
+            pickupLocation = Location("789 Pine Rd, West Side", 40.7580, -73.9855),
+            destinationLocation = Location("321 Elm St, East Side", 40.7484, -73.9857),
             rating = 0,
-
-            ),
+        ),
         Delivery(
             id = "3",
             customerName = "Lisa Martinez",
@@ -36,26 +33,33 @@ object MockDeliveryDataSource {
             status = DeliveryStatus.IN_PROGRESS.label,
             price = 40.00,
             date = Date(),
-            pickupAddress = "890 Cedar Blvd, North",
-            destinationAddress = "432 Maple Dr, South",
-            phoneNumber = "+1-555-0166",
+            pickupLocation = Location("890 Cedar Blvd, North", 40.7060, -74.0086),
+            destinationLocation = Location("432 Maple Dr, South", 40.7527, -73.9772),
             rating = 0,
-
-            ),
+        ),
         Delivery(
             id = "4",
             customerName = "Mori Arditi",
-            customerId = "11111111",
+            customerId = "123456789",
             status = DeliveryStatus.COMPLETED.label,
             price = 40.00,
             date = Date(),
-            pickupAddress = "890 Cedar Blvd, North",
-            destinationAddress = "432 Maple Dr, South",
-            phoneNumber = "+1-555-6767",
+            pickupLocation = Location("890 Cedar Blvd, North", 40.7060, -74.0086),
+            destinationLocation = Location("432 Maple Dr, South", 40.7527, -73.9772),
             rating = 5,
-
-            )
+        )
     )
+
+    fun addDelivery(delivery: Delivery) {
+        deliveries.add(0, delivery)
+    }
+
+    fun updateDeliveryStatus(deliveryId: String, newStatus: String) {
+        val index = deliveries.indexOfFirst { it.id == deliveryId }
+        if (index != -1) {
+            deliveries[index] = deliveries[index].copy(status = newStatus)
+        }
+    }
 
     fun getPendingDeliveries(): List<Delivery> =
         deliveries.filter { it.status == DeliveryStatus.PENDING.label }
@@ -68,6 +72,4 @@ object MockDeliveryDataSource {
 
     fun getDeliveriesByCustomer(customerId: String): List<Delivery> =
         deliveries.filter { it.customerId == customerId }
-
-
 }

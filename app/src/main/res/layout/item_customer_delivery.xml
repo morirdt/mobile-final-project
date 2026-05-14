@@ -22,33 +22,51 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- Header: Name and Price -->
+            <!-- Header: Name, Status, and Price -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/customer_delivery_name_text_view"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Emily Davis"
-                    android:textAppearance="?attr/textAppearanceTitleSmall"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/customer_delivery_name_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/sample_customer_name"
+                        android:textAppearance="?attr/textAppearanceTitleSmall"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/customer_delivery_status_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="@string/sample_status_pending"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        android:textColor="@color/white" />
+                </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/customer_delivery_price_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="$21.25"
+                    android:text="@string/sample_price"
                     android:textAppearance="?attr/textAppearanceTitleSmall"
                     android:textColor="@color/teal_700" />
 
             </LinearLayout>
 
-            <!-- Category and Distance + Time -->
+            <!-- Date and Time -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -56,21 +74,22 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/customer_delivery_date_time_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2025-12-27 | 10:00"
+                    android:text="@string/sample_date_time"
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 
+            <!-- Addresses Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -79,8 +98,7 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-
-                    <!-- From -->
+                    <!-- From Address -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -102,7 +120,7 @@
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="From"
+                                android:text="@string/from_label"
                                 android:textAppearance="?attr/textAppearanceLabelSmall"
                                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -111,7 +129,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:text="555 Maple Dr, North"
+                                android:text="@string/sample_pickup_address"
                                 android:textAppearance="?attr/textAppearanceBodySmall"
                                 android:textColor="?attr/colorOnSurface" />
 
@@ -119,7 +137,7 @@
 
                     </LinearLayout>
 
-                    <!-- To -->
+                    <!-- To Address -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -142,7 +160,7 @@
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="To"
+                                android:text="@string/to_label"
                                 android:textAppearance="?attr/textAppearanceLabelSmall"
                                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -151,7 +169,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:text="888 Cedar Ln, South"
+                                android:text="@string/sample_destination_address"
                                 android:textAppearance="?attr/textAppearanceBodySmall"
                                 android:textColor="?attr/colorOnSurface" />
 
@@ -159,9 +177,9 @@
 
                     </LinearLayout>
 
-
                 </LinearLayout>
 
+                <!-- Image Section -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -173,7 +191,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@color/teal_700"
-                        android:contentDescription="Load Image"
+                        android:contentDescription="@string/load_image"
                         android:scaleType="centerCrop"
                         android:src="@drawable/ic_person" />
 

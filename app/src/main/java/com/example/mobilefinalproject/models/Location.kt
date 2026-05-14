@@ -1,4 +1,4 @@
-package com.example.mobilefinalproject.model
+package com.example.mobilefinalproject.models
 
 import java.io.Serializable
 
