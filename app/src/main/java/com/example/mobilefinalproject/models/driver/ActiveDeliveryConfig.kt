@@ -22,11 +22,6 @@ data class ActiveDeliveryConfig(
 )
 
 val activeDeliveryConfigs = mapOf<String, ActiveDeliveryConfig>(
-    DeliveryStatus.PENDING.label to ActiveDeliveryConfig(
-        badgeDrawable = R.drawable.badge_pending,
-        strokeColor = "#FF616161",
-        buttons = emptyList()
-    ),
     DeliveryStatus.ACCEPTED.label to ActiveDeliveryConfig(
 
         badgeDrawable = R.drawable.badge_accepted,
@@ -52,9 +47,8 @@ val activeDeliveryConfigs = mapOf<String, ActiveDeliveryConfig>(
                 "Details",
                 R.drawable.button_light_purple,
                 "#FF9C27B0".toColorInt(),
-                0.25f
+                0.5f
             ),
-            ButtonConfig("Cancel", R.drawable.button_red, Color.WHITE, 0.25f),
         )
     ),
 

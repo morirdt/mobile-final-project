@@ -73,6 +73,22 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/active_delivery_time_text_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Time"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+
             <!-- Pickup Location -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -102,11 +118,11 @@
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/active_delivery_pickup_address_time_text_view"
+                        android:id="@+id/active_delivery_pickup_address_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Address | Time"
+                        android:text="Address"
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="?attr/colorOnSurface" />
 

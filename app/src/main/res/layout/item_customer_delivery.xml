@@ -4,14 +4,15 @@
     android:id="@+id/cardWrapper"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp">
+    android:layout_marginBottom="12dp"
+    android:padding="2dp">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/customer_delivery_card_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="12dp"
+        app:cardCornerRadius="16dp"
         app:cardElevation="2dp"
         app:strokeColor="@color/teal_700"
         app:strokeWidth="2dp">
@@ -20,19 +21,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="16dp">
 
             <!-- Header: Name, Status, and Price -->
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:id="@+id/header_info"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_alignParentStart="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -40,56 +40,63 @@
                         android:id="@+id/customer_delivery_name_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:text="@string/sample_customer_name"
-                        android:textAppearance="?attr/textAppearanceTitleSmall"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:text="Driver Name"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/customer_delivery_status_text_view"
+                    <!-- Status Badge using CardView for perfect rounding and no "background behind background" -->
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="4dp"
-                        android:text="@string/sample_status_pending"
-                        android:textAppearance="?attr/textAppearanceLabelSmall"
-                        android:textColor="@color/white" />
+                        android:layout_marginStart="8dp"
+                        app:cardBackgroundColor="@color/teal_700"
+                        app:cardCornerRadius="100dp"
+                        app:cardElevation="0dp">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/customer_delivery_status_text_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="4dp"
+                            android:text="Pending"
+                            android:textAppearance="?attr/textAppearanceLabelSmall"
+                            android:textColor="@color/white" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
                 </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/customer_delivery_price_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/sample_price"
-                    android:textAppearance="?attr/textAppearanceTitleSmall"
-                    android:textColor="@color/teal_700" />
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="$45.00"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="@color/teal_700"
+                    android:textStyle="bold" />
 
-            </LinearLayout>
+            </RelativeLayout>
 
             <!-- Date and Time -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/customer_delivery_date_time_text_view"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:text="15/05/2026 • 12:45"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/customer_delivery_date_time_text_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sample_date_time"
-                    android:textAppearance="?attr/textAppearanceBodySmall"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-            </LinearLayout>
-
-            <!-- Addresses Section -->
+            <!-- Main Content Area: Addresses + Image -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:baselineAligned="false"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -98,29 +105,28 @@
                     android:layout_weight="1"
                     android:orientation="vertical">
 
-                    <!-- From Address -->
+                    <!-- Pickup -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <View
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/circle_teal_200" />
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🏠"
+                            android:textSize="20sp" />
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
-                            android:layout_weight="1"
                             android:orientation="vertical">
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/from_label"
+                                android:text="Pickup"
                                 android:textAppearance="?attr/textAppearanceLabelSmall"
                                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -128,39 +134,35 @@
                                 android:id="@+id/customer_delivery_pickup_address_text_view"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/sample_pickup_address"
-                                android:textAppearance="?attr/textAppearanceBodySmall"
+                                android:text="123 Main St, Downtown"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
                                 android:textColor="?attr/colorOnSurface" />
-
                         </LinearLayout>
-
                     </LinearLayout>
 
-                    <!-- To Address -->
+                    <!-- Destination -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="12dp"
                         android:orientation="horizontal">
 
-                        <View
-                            android:layout_width="10dp"
-                            android:layout_height="10dp"
-                            android:layout_marginTop="4dp"
-                            android:background="@drawable/circle_teal_700" />
+                        <com.google.android.material.textview.MaterialTextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📍"
+                            android:textSize="20sp" />
 
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="12dp"
-                            android:layout_weight="1"
                             android:orientation="vertical">
 
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/to_label"
+                                android:text="Destination"
                                 android:textAppearance="?attr/textAppearanceLabelSmall"
                                 android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -168,36 +170,34 @@
                                 android:id="@+id/customer_delivery_destination_address_text_view"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="@string/sample_destination_address"
-                                android:textAppearance="?attr/textAppearanceBodySmall"
+                                android:text="456 Oak Ave, Uptown"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
                                 android:textColor="?attr/colorOnSurface" />
-
                         </LinearLayout>
-
                     </LinearLayout>
 
                 </LinearLayout>
 
-                <!-- Image Section -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0.25"
-                    android:orientation="vertical">
+                <!-- Package Image -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_marginStart="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/teal_700"
+                    app:strokeWidth="1dp">
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/customer_delivery_image_view"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@color/teal_700"
-                        android:contentDescription="@string/load_image"
                         android:scaleType="centerCrop"
                         android:src="@drawable/ic_person" />
 
-                </LinearLayout>
-            </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
+            </LinearLayout>
 
         </LinearLayout>
 

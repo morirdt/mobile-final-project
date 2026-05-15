@@ -53,4 +53,5 @@
     <string name="finder_sample_time">2025-12-27 • 10:00</string>
     <string name="finder_sample_pickup_address">555 Maple Dr, North</string>
     <string name="finder_sample_destination_address">888 Cedar Ln, South</string>
+    <string name="delivery_image">Delivery Image</string>
 </resources>

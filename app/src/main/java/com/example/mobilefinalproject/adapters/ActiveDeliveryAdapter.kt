@@ -14,6 +14,7 @@ import com.example.mobilefinalproject.models.DeliveryStatus
 import com.example.mobilefinalproject.models.MockDeliveryDataSource
 import com.example.mobilefinalproject.models.driver.ButtonConfig
 import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
+import com.example.mobilefinalproject.ui.dialogs.DeliveryDetailsDialog
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -54,13 +55,8 @@ class ActiveDeliveryAdapter(var deliveries: List<Delivery>?) :
             )
 
             val pickupTime = SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()).format(delivery.date)
-            binding.activeDeliveryPickupAddressTimeTextView.text =
-                binding.root.context.getString(
-                    R.string.active_delivery_pickup_time_format,
-                    delivery.pickupLocation.address,
-                    pickupTime
-                )
-
+            binding.activeDeliveryTimeTextView.text = pickupTime
+            binding.activeDeliveryPickupAddressTextView.text = delivery.pickupLocation.address
             binding.activeDeliveryDestinationAddressTextView.text = delivery.destinationLocation.address
 
             setupActionButtons(delivery)
@@ -109,6 +105,16 @@ class ActiveDeliveryAdapter(var deliveries: List<Delivery>?) :
                         text.equals("Complete", ignoreCase = true) && delivery.status == DeliveryStatus.IN_PROGRESS.label -> {
                             MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.COMPLETED.label)
                             Toast.makeText(context, "Order completed", Toast.LENGTH_SHORT).show()
+                            (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
+                        }
+                        text.equals("Details", ignoreCase = true) -> {
+                            DeliveryDetailsDialog(context).show(delivery) {
+                                (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
+                            }
+                        }
+                        text.equals("Cancel", ignoreCase = true) -> {
+                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.PENDING.label)
+                            Toast.makeText(context, "Delivery cancelled", Toast.LENGTH_SHORT).show()
                             (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
                         }
                     }

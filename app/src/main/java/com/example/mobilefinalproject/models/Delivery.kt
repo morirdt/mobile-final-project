@@ -13,6 +13,6 @@ data class Delivery(
     val date: Date,
     val pickupLocation: Location,
     val destinationLocation: Location,
-    val rating: Int,
+    val description: String = "",
     val imageUri: Uri? = null,
 ) : Serializable

@@ -383,6 +383,7 @@ class CustomerNewOrderFragment : Fragment() {
         val pickup = pickupLocation ?: return
         val destination = destinationLocation ?: return
         val budget = binding?.customerNewOrderBudgetEditText?.text?.toString()?.trim()?.toDoubleOrNull() ?: return
+        val description = binding?.customerNewOrderDescriptionEditText?.text?.toString()?.trim().orEmpty()
         val dateText = binding?.customerNewOrderPickupDateEditText?.text?.toString()?.trim().orEmpty()
         val timeText = binding?.customerNewOrderPickupTimeEditText?.text?.toString()?.trim().orEmpty()
         val dateTimeString = "$dateText $timeText"
@@ -401,7 +402,7 @@ class CustomerNewOrderFragment : Fragment() {
             date = deliveryDate,
             pickupLocation = pickup,
             destinationLocation = destination,
-            rating = 0,
+            description = description,
             imageUri = selectedImageUri
         )
 

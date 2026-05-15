@@ -35,7 +35,6 @@ class CompletedDeliveryAdapter(
                 SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()).format(item.date)
             binding.completedDeliveryPickupAddressTextView.text = item.pickupLocation.address
             binding.completedDeliveryDestinationAddressTextView.text = item.destinationLocation.address
-            binding.completedDeliveryRatingBar.rating = item.rating.toFloat()
         }
     }
 }
