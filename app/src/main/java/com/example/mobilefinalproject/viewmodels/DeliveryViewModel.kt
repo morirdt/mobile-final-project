@@ -4,8 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.mobilefinalproject.models.Delivery
-import com.example.mobilefinalproject.models.DeliveryStatus
-import java.util.Date
 
 class DeliveryViewModel : ViewModel() {
     private val _deliveries = MutableLiveData<List<Delivery>>()
@@ -16,6 +14,13 @@ class DeliveryViewModel : ViewModel() {
 
     private val _completedDeliveries = MutableLiveData<List<Delivery>>()
     val completedDeliveries: LiveData<List<Delivery>> = _completedDeliveries
+
+    private val _selectedDelivery = MutableLiveData<Delivery?>(null)
+    val selectedDelivery: LiveData<Delivery?> = _selectedDelivery
+
+    fun selectDelivery(delivery: Delivery?) {
+        _selectedDelivery.value = delivery
+    }
 
     fun setDeliveries(deliveries: List<Delivery>) {
         _deliveries.value = deliveries

@@ -1,7 +1,5 @@
 package com.example.mobilefinalproject.models
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import java.util.Date
 
 object MockDeliveryDataSource {
@@ -16,6 +14,10 @@ object MockDeliveryDataSource {
             dropoffAddress = "456 Oak Ave, Uptown",
             phoneNumber = "+1-555-0199",
             rating = 0,
+            pickupLat = 32.0853,
+            pickupLng = 34.7818,
+            dropoffLat = 32.0923,
+            dropoffLng = 34.7901,
         ),
         Delivery(
             id = "2",
@@ -27,8 +29,11 @@ object MockDeliveryDataSource {
             dropoffAddress = "321 Elm St, East Side",
             phoneNumber = "+1-555-0188",
             rating = 0,
-
-            ),
+            pickupLat = 32.0780,
+            pickupLng = 34.7750,
+            dropoffLat = 32.0810,
+            dropoffLng = 34.7950,
+        ),
         Delivery(
             id = "3",
             customerName = "Lisa Martinez",
@@ -39,8 +44,11 @@ object MockDeliveryDataSource {
             dropoffAddress = "432 Maple Dr, South",
             phoneNumber = "+1-555-0166",
             rating = 0,
-
-            ),
+            pickupLat = 32.0970,
+            pickupLng = 34.7845,
+            dropoffLat = 32.0730,
+            dropoffLng = 34.7820,
+        ),
         Delivery(
             id = "4",
             customerName = "Mori Arditi",
@@ -51,8 +59,11 @@ object MockDeliveryDataSource {
             dropoffAddress = "432 Maple Dr, South",
             phoneNumber = "+1-555-6767",
             rating = 5,
-
-            )
+            pickupLat = 32.0660,
+            pickupLng = 34.7780,
+            dropoffLat = 32.0700,
+            dropoffLng = 34.7700,
+        )
     )
 
     fun getPendingDeliveries(): List<Delivery> =
