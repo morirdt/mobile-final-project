@@ -2,4 +2,12 @@
 <resources>
     <string name="app_name">TruckBack</string>
     <string name="app_title">TruckBack</string>
+    <string name="delivery_finder_title">Delivery Finder</string>
+    <string name="delivery_finder_subtitle">Tap a marker to view delivery details</string>
+    <string name="my_location">My Location</string>
+    <string name="location_permission_denied_banner">Location access denied. Enable it in Settings to see your position on the map.</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="order_id_format">Order #%1$s</string>
+    <string name="locations_nearby">%1$d locations nearby</string>
+    <string name="zoom_in_for_orders">Zoom in to view individual orders</string>
 </resources>

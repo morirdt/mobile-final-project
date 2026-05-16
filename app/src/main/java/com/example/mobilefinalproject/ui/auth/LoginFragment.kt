@@ -5,8 +5,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.databinding.FragmentLoginBinding
+import com.example.mobilefinalproject.models.Customer
+import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.google.android.material.button.MaterialButton
 
 class LoginFragment : Fragment() {
@@ -14,6 +17,7 @@ class LoginFragment : Fragment() {
     private var binding: FragmentLoginBinding? = null
 
     private var selectedUserType: UserType = UserType.DRIVER
+    private lateinit var customerViewModel: CustomerViewModel
 
     enum class UserType {
         DRIVER, CUSTOMER
@@ -30,6 +34,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        customerViewModel = ViewModelProvider(requireActivity())[CustomerViewModel::class.java]
         setupUserTypeToggle()
         setupRegisterLink()
         setupLoginButton()
@@ -45,6 +50,9 @@ class LoginFragment : Fragment() {
                     findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_driverContainerFragment)
                 }
                 UserType.CUSTOMER -> {
+                    val typedId = binding?.idTextInputEditText?.text?.toString()?.trim().orEmpty()
+                    val customerId = typedId.ifBlank { "123456789" }
+                    customerViewModel.setCustomer(Customer(id = customerId, fullName = "Customer $customerId"))
                     // Navigate to Customer Container Fragment using Navigation Component
                     findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_customerContainerFragment)
                 }

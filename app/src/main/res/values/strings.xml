@@ -54,4 +54,11 @@
     <string name="finder_sample_pickup_address">555 Maple Dr, North</string>
     <string name="finder_sample_destination_address">888 Cedar Ln, South</string>
     <string name="delivery_image">Delivery Image</string>
+    <string name="customer_home_title">Welcome back</string>
+    <string name="customer_home_subtitle">Track your orders and create new deliveries.</string>
+    <string name="customer_home_pending">Pending Orders</string>
+    <string name="customer_home_active">Active Orders</string>
+    <string name="customer_home_create_order">Create New Order</string>
+    <string name="customer_home_view_orders">View My Orders</string>
+    <string name="customer_home_greeting">Hi, %1$s</string>
 </resources>

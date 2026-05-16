@@ -10,13 +10,16 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mobilefinalproject.databinding.FragmentCustomerContainerBinding
 import com.example.mobilefinalproject.models.Customer
+import com.example.mobilefinalproject.models.MockDeliveryDataSource
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
+import com.example.mobilefinalproject.viewmodels.DeliveryViewModel
 import com.example.mobilefinalproject.R
 
 class CustomerContainerFragment : Fragment() {
 
     private var binding: FragmentCustomerContainerBinding? = null
     private lateinit var customerViewModel: CustomerViewModel
+    private lateinit var deliveryViewModel: DeliveryViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,12 +35,14 @@ class CustomerContainerFragment : Fragment() {
 
         // Initialize ViewModel at activity scope
         customerViewModel = ViewModelProvider(requireActivity())[CustomerViewModel::class.java]
+        deliveryViewModel = ViewModelProvider(requireActivity())[DeliveryViewModel::class.java]
 
-        // TODO: Get driver from arguments or authentication
-        val customer = Customer("123456789", "John Customer")
+        val customer = customerViewModel.customer.value ?: Customer("123456789", "John Customer")
 
-        // Set customer in ViewModel (accessible throughout the app)
-        customerViewModel.setCustomer(customer)
+        if (customerViewModel.customer.value == null) {
+            customerViewModel.setCustomer(customer)
+        }
+        deliveryViewModel.setCustomerDeliveries(MockDeliveryDataSource.getDeliveriesByCustomer(customer.id))
 
         // Get NavController from nested NavHostFragment
         val navHostFragment = binding?.let {
@@ -59,5 +64,10 @@ class CustomerContainerFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 }
