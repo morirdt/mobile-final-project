@@ -40,7 +40,7 @@ android {
         logger.lifecycle("[build.gradle.kts] Resolved MAPS_API_KEY='${mapsApiKey}' (from project? ${mapsApiKeyFromProject != null}, localProps? ${mapsApiKeyFromLocalProperties != null}, env? ${mapsApiKeyFromEnv != null})")
 
         if (mapsApiKey.isBlank()) {
-            throw GradleException("MAPS_API_KEY is not set. Set it in local.properties (MAPS_API_KEY=...), as a project property (-PMAPS_API_KEY=...), or as an environment variable MAPS_API_KEY. Build cannot continue without it.")
+            logger.warn("MAPS_API_KEY is not set. Places autocomplete will be disabled and manual address input will be used.")
         }
 
         // Expose to BuildConfig for runtime access in code
@@ -85,6 +85,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.fragment.ktx)
+    implementation(libs.osmdroid.android)
+    debugImplementation(libs.androidx.fragment.testing)
     implementation("com.google.android.libraries.places:places:3.3.0")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
@@ -92,4 +94,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.fragment.testing)
 }

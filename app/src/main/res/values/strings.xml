@@ -21,8 +21,6 @@
 <!--    <string name="already_have_account">Already have an account?</string>-->
     <string name="my_orders_title">My Orders</string>
     <string name="my_orders_subtitle">Go over your pending orders</string>
-    <string name="customer_home_title">Welcome Back!</string>
-    <string name="customer_home_subtitle">Request a delivery in minutes</string>
     <string name="customer_home_request_title">Request a Delivery</string>
     <string name="customer_home_request_subtitle">Get your items delivered quickly and safely</string>
     <string name="customer_home_features_title">Why Choose TruckBack?</string>
@@ -63,7 +61,7 @@
         <item>Pending</item>
         <item>Accepted</item>
         <item>In Progress</item>
-        <item>Completed</item>
+         <item>Completed</item>
         <item>Cancelled</item>
     </string-array>
     <string name="finder_sample_customer_name">Emily Davis</string>
@@ -72,4 +70,11 @@
     <string name="finder_sample_pickup_address">555 Maple Dr, North</string>
     <string name="finder_sample_destination_address">888 Cedar Ln, South</string>
     <string name="delivery_image">Delivery Image</string>
+    <string name="customer_home_title">Welcome back</string>
+    <string name="customer_home_subtitle">Track your orders and create new deliveries.</string>
+    <string name="customer_home_pending">Pending Orders</string>
+    <string name="customer_home_active">Active Orders</string>
+    <string name="customer_home_create_order">Create New Order</string>
+    <string name="customer_home_view_orders">View My Orders</string>
+    <string name="customer_home_greeting">Hi, %1$s</string>
 </resources>

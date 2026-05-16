@@ -121,4 +121,9 @@ class CustomerEditProfileFragment : Fragment() {
             findNavController().navigateUp()
         }
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
 }

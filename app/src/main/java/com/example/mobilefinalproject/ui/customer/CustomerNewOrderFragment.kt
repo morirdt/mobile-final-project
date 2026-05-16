@@ -43,12 +43,20 @@ class CustomerNewOrderFragment : Fragment() {
     private var pickupLocation: Location? = null
     private var destinationLocation: Location? = null
     private var selectedImageUri: Uri? = null
+    private var isPlacesAutocompleteEnabled: Boolean = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (!Places.isInitialized()) {
-            Places.initialize(context.applicationContext, com.example.mobilefinalproject.BuildConfig.MAPS_API_KEY)
+        val mapsApiKey = com.example.mobilefinalproject.BuildConfig.MAPS_API_KEY
+        if (mapsApiKey.isBlank()) {
+            isPlacesAutocompleteEnabled = false
+            return
         }
+
+        if (!Places.isInitialized()) {
+            Places.initialize(context.applicationContext, mapsApiKey)
+        }
+        isPlacesAutocompleteEnabled = true
     }
 
     override fun onCreateView(
@@ -205,16 +213,26 @@ class CustomerNewOrderFragment : Fragment() {
 
 
     private fun setupAddressPickers() {
-        binding?.customerNewOrderPickupAddressEditText?.isFocusable = false
-        binding?.customerNewOrderPickupAddressEditText?.isClickable = true
-        binding?.customerNewOrderPickupAddressEditText?.setOnClickListener {
-            openPlacesAutocomplete(pickupAddressLauncher)
-        }
+        if (isPlacesAutocompleteEnabled) {
+            binding?.customerNewOrderPickupAddressEditText?.isFocusable = false
+            binding?.customerNewOrderPickupAddressEditText?.isClickable = true
+            binding?.customerNewOrderPickupAddressEditText?.setOnClickListener {
+                openPlacesAutocomplete(pickupAddressLauncher)
+            }
 
-        binding?.customerNewOrderDestinationAddressEditText?.isFocusable = false
-        binding?.customerNewOrderDestinationAddressEditText?.isClickable = true
-        binding?.customerNewOrderDestinationAddressEditText?.setOnClickListener {
-            openPlacesAutocomplete(destinationAddressLauncher)
+            binding?.customerNewOrderDestinationAddressEditText?.isFocusable = false
+            binding?.customerNewOrderDestinationAddressEditText?.isClickable = true
+            binding?.customerNewOrderDestinationAddressEditText?.setOnClickListener {
+                openPlacesAutocomplete(destinationAddressLauncher)
+            }
+        } else {
+            binding?.customerNewOrderPickupAddressEditText?.isFocusableInTouchMode = true
+            binding?.customerNewOrderPickupAddressEditText?.isClickable = true
+            binding?.customerNewOrderPickupAddressEditText?.isFocusable = true
+
+            binding?.customerNewOrderDestinationAddressEditText?.isFocusableInTouchMode = true
+            binding?.customerNewOrderDestinationAddressEditText?.isClickable = true
+            binding?.customerNewOrderDestinationAddressEditText?.isFocusable = true
         }
     }
 
@@ -251,7 +269,11 @@ class CustomerNewOrderFragment : Fragment() {
     }
 
     private fun checkAndRequestGalleryPermission() {
-        val permission = android.Manifest.permission.READ_MEDIA_IMAGES
+        val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
         when {
             ContextCompat.checkSelfPermission(
@@ -380,8 +402,20 @@ class CustomerNewOrderFragment : Fragment() {
             return
         }
 
-        val pickup = pickupLocation ?: return
-        val destination = destinationLocation ?: return
+        val pickup = pickupLocation ?: Location(
+            address = binding?.customerNewOrderPickupAddressEditText?.text?.toString()?.trim().orEmpty(),
+            latitude = 0.0,
+            longitude = 0.0,
+        )
+        val destination = destinationLocation ?: Location(
+            address = binding?.customerNewOrderDestinationAddressEditText?.text?.toString()?.trim().orEmpty(),
+            latitude = 0.0,
+            longitude = 0.0,
+        )
+
+        if (pickup.address.isBlank() || destination.address.isBlank()) {
+            return
+        }
         val budget = binding?.customerNewOrderBudgetEditText?.text?.toString()?.trim()?.toDoubleOrNull() ?: return
         val description = binding?.customerNewOrderDescriptionEditText?.text?.toString()?.trim().orEmpty()
         val dateText = binding?.customerNewOrderPickupDateEditText?.text?.toString()?.trim().orEmpty()
@@ -409,6 +443,7 @@ class CustomerNewOrderFragment : Fragment() {
 
         MockDeliveryDataSource.addDelivery(newDelivery)
         deliveryViewModel.setDeliveries(MockDeliveryDataSource.deliveries.toList())
+        deliveryViewModel.setPendingDeliveries(MockDeliveryDataSource.getPendingDeliveries())
         deliveryViewModel.setCustomerDeliveries(MockDeliveryDataSource.getDeliveriesByCustomer(customer.id))
         findNavController().navigate(com.example.mobilefinalproject.R.id.action_customerNewOrderFragment_to_customerHomeFragment)
     }
@@ -423,5 +458,10 @@ class CustomerNewOrderFragment : Fragment() {
         destinationLocation = Location(address = address, latitude = latitude, longitude = longitude)
         binding?.customerNewOrderDestinationAddressEditText?.setText(address)
         binding?.customerNewOrderDestinationAddressLayout?.error = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 }

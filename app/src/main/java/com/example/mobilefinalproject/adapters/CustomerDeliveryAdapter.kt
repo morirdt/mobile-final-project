@@ -70,7 +70,7 @@ class CustomerDeliveryAdapter(
             binding.customerDeliveryCardView.strokeWidth = 2.dpToPx()
 
             binding.customerDeliveryImageView.setOnClickListener {
-                showImagePreview()
+                showImagePreview(item)
             }
 
             setupActionButtons(item)
@@ -168,12 +168,18 @@ class CustomerDeliveryAdapter(
             binding.customerDeliveryButtonsContainerLinearLayout.addView(button)
         }
 
-        private fun showImagePreview() {
+        private fun showImagePreview(delivery: Delivery) {
             val dialog = Dialog(binding.root.context)
             val previewBinding = DialogDeliveryImagePreviewBinding.inflate(LayoutInflater.from(binding.root.context))
             dialog.setContentView(previewBinding.root)
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            previewBinding.deliveryImagePreviewImageView.setImageResource(com.example.mobilefinalproject.R.drawable.ic_person)
+
+            if (delivery.imageUri != null) {
+                previewBinding.deliveryImagePreviewImageView.setImageURI(delivery.imageUri)
+            } else {
+                previewBinding.deliveryImagePreviewImageView.setImageResource(R.drawable.ic_placeholder_image)
+            }
+
             dialog.show()
         }
 

@@ -15,6 +15,8 @@ object MockDeliveryDataSource {
             pickupLocation = Location("123 Main St, Downtown", 40.7128, -74.0060),
             destinationLocation = Location("456 Oak Ave, Uptown", 40.7306, -73.9866),
             description = "Fragile glassware - handle with care",
+            phoneNumber = "+1-555-0199",
+            rating = 0,
         ),
         Delivery(
             id = "2",
@@ -27,6 +29,8 @@ object MockDeliveryDataSource {
             pickupLocation = Location("789 Pine Rd, West Side", 40.7580, -73.9855),
             destinationLocation = Location("321 Elm St, East Side", 40.7484, -73.9857),
             description = "Electronics package - requires signature",
+            phoneNumber = "+1-555-0188",
+            rating = 0,
         ),
         Delivery(
             id = "3",
@@ -39,6 +43,8 @@ object MockDeliveryDataSource {
             pickupLocation = Location("890 Cedar Blvd, North", 40.7060, -74.0086),
             destinationLocation = Location("432 Maple Dr, South", 40.7527, -73.9772),
             description = "Office supplies and documents",
+            phoneNumber = "+1-555-0166",
+            rating = 0,
         ),
         Delivery(
             id = "4",
@@ -51,6 +57,8 @@ object MockDeliveryDataSource {
             pickupLocation = Location("890 Cedar Blvd, North", 40.7060, -74.0086),
             destinationLocation = Location("432 Maple Dr, South", 40.7527, -73.9772),
             description = "Books and magazines collection",
+            phoneNumber = "+1-555-6767",
+            rating = 5,
         )
     )
 
