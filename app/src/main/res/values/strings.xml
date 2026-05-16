@@ -21,6 +21,21 @@
 <!--    <string name="already_have_account">Already have an account?</string>-->
     <string name="my_orders_title">My Orders</string>
     <string name="my_orders_subtitle">Go over your pending orders</string>
+    <string name="customer_home_request_title">Request a Delivery</string>
+    <string name="customer_home_request_subtitle">Get your items delivered quickly and safely</string>
+    <string name="customer_home_features_title">Why Choose TruckBack?</string>
+    <string name="customer_home_feature_fast_title">Fast Delivery</string>
+    <string name="customer_home_feature_fast_subtitle">Same-day delivery available</string>
+    <string name="customer_home_feature_fast_icon">⏱</string>
+    <string name="customer_home_feature_trusted_title">Trusted Drivers</string>
+    <string name="customer_home_feature_trusted_subtitle">Verified &amp; insured drivers</string>
+    <string name="customer_home_feature_trusted_icon">🛡</string>
+    <string name="customer_home_feature_track_title">Track Live</string>
+    <string name="customer_home_feature_track_subtitle">Real-time GPS tracking</string>
+    <string name="customer_home_feature_track_icon">📡</string>
+    <string name="customer_home_feature_pricing_title">Fair Pricing</string>
+    <string name="customer_home_feature_pricing_subtitle">Transparent cost estimates</string>
+    <string name="customer_home_feature_pricing_icon">$</string>
     <string name="filters_label">Filter Orders:</string>
     <string name="sample_customer_name">Emily Davis</string>
     <string name="sample_price">$21.25</string>
@@ -46,7 +61,8 @@
         <item>Pending</item>
         <item>Accepted</item>
         <item>In Progress</item>
-        <item>Completed</item>
+         <item>Completed</item>
+        <item>Cancelled</item>
     </string-array>
     <string name="finder_sample_customer_name">Emily Davis</string>
     <string name="finder_sample_price">$21.25</string>

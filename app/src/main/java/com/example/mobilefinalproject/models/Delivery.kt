@@ -6,6 +6,7 @@ import java.util.Date
 data class Delivery(
     val id: String,
     val customerName: String,
+    val driverName: String,
     val customerId: String,
     val status: String,
     val price: Double,

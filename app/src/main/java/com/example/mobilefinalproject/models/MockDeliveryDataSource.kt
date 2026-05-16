@@ -7,6 +7,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "1",
             customerName = "Sarah Johnson",
+            driverName = "Driver 1",
             customerId = "123456789",
             status = DeliveryStatus.PENDING.label,
             price = 45.00,
@@ -20,6 +21,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "2",
             customerName = "Mike Chen",
+            driverName = "Driver 2",
             customerId = "123456789",
             status = DeliveryStatus.ACCEPTED.label,
             price = 30.00,
@@ -33,6 +35,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "3",
             customerName = "Lisa Martinez",
+            driverName = "Driver 3",
             customerId = "123456789",
             status = DeliveryStatus.IN_PROGRESS.label,
             price = 40.00,
@@ -46,6 +49,7 @@ object MockDeliveryDataSource {
         Delivery(
             id = "4",
             customerName = "Mori Arditi",
+            driverName = "Not Assigned",
             customerId = "123456789",
             status = DeliveryStatus.COMPLETED.label,
             price = 40.00,

@@ -37,7 +37,7 @@
                     android:orientation="horizontal">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/customer_delivery_name_text_view"
+                        android:id="@+id/customer_delivery_driver_name_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Driver Name"
@@ -45,26 +45,28 @@
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold" />
 
-                    <!-- Status Badge using CardView for perfect rounding and no "background behind background" -->
-                    <com.google.android.material.card.MaterialCardView
+                    <!-- Status Badge (match driver active layout) -->
+                    <LinearLayout
+                        android:id="@+id/customer_delivery_status_badge_linear_layout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
-                        app:cardBackgroundColor="@color/teal_700"
-                        app:cardCornerRadius="100dp"
-                        app:cardElevation="0dp">
+                        android:background="@drawable/badge_background"
+                        android:gravity="center"
+                        android:paddingStart="12dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="12dp"
+                        android:paddingBottom="4dp">
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/customer_delivery_status_text_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:paddingHorizontal="12dp"
-                            android:paddingVertical="4dp"
                             android:text="Pending"
                             android:textAppearance="?attr/textAppearanceLabelSmall"
-                            android:textColor="@color/white" />
+                            android:textColor="?attr/colorOnPrimary" />
 
-                    </com.google.android.material.card.MaterialCardView>
+                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -198,6 +200,14 @@
                 </com.google.android.material.card.MaterialCardView>
 
             </LinearLayout>
+
+            <!-- Action Buttons Container -->
+            <LinearLayout
+                android:id="@+id/customer_delivery_buttons_container_linear_layout"
+                android:layout_width="match_parent"
+                android:layout_height="32dp"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal" />
 
         </LinearLayout>
 

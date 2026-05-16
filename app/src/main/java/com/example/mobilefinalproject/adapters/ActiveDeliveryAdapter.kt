@@ -44,6 +44,7 @@ class ActiveDeliveryAdapter(var deliveries: List<Delivery>?) :
         fun bind(delivery: Delivery) {
             binding.activeDeliveryCustomerNameTextView.text = delivery.customerName
             binding.activeDeliveryStatusTextView.text = delivery.status
+            binding.activeDeliveryPriceTextView.text = String.format(Locale.getDefault(), "$%.2f", delivery.price)
             binding.activeDeliveryMaterialCardView.strokeColor =
                 activeDeliveryConfigs[delivery.status]?.strokeColor?.toColorInt()
                     ?: "#FFC107".toColorInt()
@@ -108,9 +109,9 @@ class ActiveDeliveryAdapter(var deliveries: List<Delivery>?) :
                             (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
                         }
                         text.equals("Details", ignoreCase = true) -> {
-                            DeliveryDetailsDialog(context).show(delivery) {
+                            DeliveryDetailsDialog(context).show(delivery, onStatusChanged = {
                                 (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
-                            }
+                            })
                         }
                         text.equals("Cancel", ignoreCase = true) -> {
                             MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.PENDING.label)

@@ -2,9 +2,12 @@ package com.example.mobilefinalproject.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.ItemDriverCompletedDeliveryBinding
 import com.example.mobilefinalproject.models.Delivery
+import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -35,6 +38,16 @@ class CompletedDeliveryAdapter(
                 SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()).format(item.date)
             binding.completedDeliveryPickupAddressTextView.text = item.pickupLocation.address
             binding.completedDeliveryDestinationAddressTextView.text = item.destinationLocation.address
+
+            // Set card stroke color based on status
+            binding.completedDeliveryCardView.strokeColor =
+                activeDeliveryConfigs[item.status]?.strokeColor?.toColorInt()
+                    ?: "#FFC107".toColorInt()
+            binding.completedDeliveryCardView.strokeWidth = 2.dpToPx()
+        }
+
+        private fun Int.dpToPx(): Int {
+            return (this * itemView.context.resources.displayMetrics.density).toInt()
         }
     }
 }
