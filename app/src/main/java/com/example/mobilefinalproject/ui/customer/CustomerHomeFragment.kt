@@ -20,8 +20,8 @@ class CustomerHomeFragment : Fragment() {
         return binding?.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        // TODO: Implement Home fragment content
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 }

@@ -46,18 +46,19 @@
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold"
-                        android:textSize="14dp"/>
+                        android:textSize="14sp"
+                        android:layout_weight="1"/>
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/finder_delivery_price_text_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:text="$21.25"
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="@color/teal_700"
-                        android:textStyle="bold"
-                        android:textSize="14dp"
-                        android:layout_marginStart="8dp"/>
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 

@@ -44,7 +44,10 @@ class CustomerMyOrdersFragment : Fragment() {
     private fun setupRecyclerView() {
         binding?.customerMyOrdersRecyclerView?.layoutManager = LinearLayoutManager(context)
         binding?.customerMyOrdersRecyclerView?.setHasFixedSize(true)
-        adapter = CustomerDeliveryAdapter(emptyList())
+        adapter = CustomerDeliveryAdapter(emptyList()) {
+            // When delivery status changed (e.g., cancelled), refresh data
+            refreshData()
+        }
         binding?.customerMyOrdersRecyclerView?.adapter = adapter
         observeDeliveries()
     }
@@ -91,6 +94,7 @@ class CustomerMyOrdersFragment : Fragment() {
             STATUS_ACCEPTED -> allCustomerDeliveries.filter { it.status == DeliveryStatus.ACCEPTED.label }
             STATUS_IN_PROGRESS -> allCustomerDeliveries.filter { it.status == DeliveryStatus.IN_PROGRESS.label }
             STATUS_COMPLETED -> allCustomerDeliveries.filter { it.status == DeliveryStatus.COMPLETED.label }
+            STATUS_CANCELLED -> allCustomerDeliveries.filter { it.status == DeliveryStatus.CANCELLED.label }
             else -> allCustomerDeliveries
         }
 
@@ -119,5 +123,6 @@ class CustomerMyOrdersFragment : Fragment() {
         private const val STATUS_ACCEPTED = "Accepted"
         private const val STATUS_IN_PROGRESS = "In Progress"
         private const val STATUS_COMPLETED = "Completed"
+        private const val STATUS_CANCELLED = "Cancelled"
     }
 }

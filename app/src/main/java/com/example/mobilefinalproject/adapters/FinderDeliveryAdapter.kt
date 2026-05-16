@@ -65,7 +65,7 @@ class FinderDeliveryAdapter(
             addButton(
                 delivery = delivery,
                 text = "Accept",
-                backgroundRes = R.drawable.button_green,
+                backgroundRes = R.drawable.button_blue,
                 weight = 0.5f
             )
 
@@ -104,9 +104,9 @@ class FinderDeliveryAdapter(
                             (bindingAdapter as? FinderDeliveryAdapter)?.refreshFromSource()
                         }
                         text.equals("Details", ignoreCase = true) -> {
-                            DeliveryDetailsDialog(context).show(delivery) {
+                            DeliveryDetailsDialog(context).show(delivery, onStatusChanged = {
                                 (bindingAdapter as? FinderDeliveryAdapter)?.refreshFromSource()
-                            }
+                            })
                         }
                         text.equals("Cancel", ignoreCase = true) -> {
                             Toast.makeText(context, "Delivery cancelled", Toast.LENGTH_SHORT).show()

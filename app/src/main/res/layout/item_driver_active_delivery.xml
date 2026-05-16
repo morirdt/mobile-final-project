@@ -17,6 +17,8 @@
         app:strokeColor="@color/teal_700"
         app:strokeWidth="2dp">
 
+
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -45,31 +47,48 @@
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="?attr/colorOnSurface"
                         android:textStyle="bold"
+                        android:textSize="14sp"
+                        />
+
+                    <LinearLayout
+                        android:id="@+id/active_delivery_status_badge_linear_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/badge_background"
+                        android:gravity="center"
+                        android:paddingStart="12dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="12dp"
+                        android:paddingBottom="4dp">
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/active_delivery_status_text_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Status"
+                            android:textAppearance="?attr/textAppearanceLabelSmall"
+                            android:textColor="?attr/colorOnPrimary"
+                            />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/active_delivery_price_text_view"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="$45.00"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="@color/teal_700"
+                        android:textStyle="bold"
                         android:textSize="14dp"/>
 
                 </LinearLayout>
 
-                <!-- Status Badge -->
-                <LinearLayout
-                    android:id="@+id/active_delivery_status_badge_linear_layout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/badge_background"
-                    android:gravity="center"
-                    android:paddingStart="12dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="12dp"
-                    android:paddingBottom="4dp">
 
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/active_delivery_status_text_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Status"
-                        android:textAppearance="?attr/textAppearanceLabelSmall"
-                        android:textColor="?attr/colorOnPrimary" />
 
-                </LinearLayout>
 
             </LinearLayout>
 

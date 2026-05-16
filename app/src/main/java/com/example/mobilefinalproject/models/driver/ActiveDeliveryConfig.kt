@@ -3,7 +3,6 @@ package com.example.mobilefinalproject.models.driver
 import androidx.annotation.DrawableRes
 import androidx.core.graphics.toColorInt
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.models.DeliveryStatus
 
@@ -51,7 +50,16 @@ val activeDeliveryConfigs = mapOf<String, ActiveDeliveryConfig>(
             ),
         )
     ),
-
-    )
+    DeliveryStatus.COMPLETED.label to ActiveDeliveryConfig(
+        badgeDrawable = R.drawable.badge_completed,
+        strokeColor = "#388E3C",
+        buttons = emptyList()
+    ),
+    DeliveryStatus.CANCELLED.label to ActiveDeliveryConfig(
+        badgeDrawable = R.drawable.badge_cancelled,
+        strokeColor = "#F44336",
+        buttons = emptyList()
+    ),
+)
 
 

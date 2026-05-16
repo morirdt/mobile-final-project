@@ -397,6 +397,7 @@ class CustomerNewOrderFragment : Fragment() {
             id = UUID.randomUUID().toString(),
             customerName = customer.fullName,
             customerId = customer.id,
+            driverName = "Not Assigned",
             status = DeliveryStatus.PENDING.label,
             price = budget,
             date = deliveryDate,

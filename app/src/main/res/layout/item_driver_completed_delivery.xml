@@ -23,7 +23,7 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- Header with Customer and Price -->
+            <!-- Header with Customer and Status -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -49,27 +49,16 @@
 
                 </LinearLayout>
 
-                <!-- Price Badge -->
-                <LinearLayout
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/completed_delivery_price_text_view"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/badge_background"
-                    android:backgroundTint="@color/teal_700"
-                    android:gravity="center"
-                    android:paddingStart="12dp"
-                    android:paddingTop="4dp"
-                    android:paddingEnd="12dp"
-                    android:paddingBottom="4dp">
-
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/completed_delivery_price_text_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="$0.00"
-                        android:textAppearance="?attr/textAppearanceLabelSmall"
-                        android:textColor="@color/white" />
-
-                </LinearLayout>
+                    android:layout_marginStart="8dp"
+                    android:text="$21.25"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="@color/teal_700"
+                    android:textSize="14dp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 

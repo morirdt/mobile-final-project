@@ -1,7 +1,7 @@
 package com.example.mobilefinalproject.ui.dialogs
 
 import android.content.Context
-import android.view.ViewGroup
+// ...existing imports...
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -21,7 +21,9 @@ class DeliveryDetailsDialog(private val context: Context) {
 
     fun show(
         delivery: Delivery,
-        onStatusChanged: (() -> Unit)? = null
+        onStatusChanged: (() -> Unit)? = null,
+        showActions: Boolean = true,
+        showDriverName: Boolean = false
     ) {
         val view = android.view.LayoutInflater.from(context)
             .inflate(R.layout.dialog_delivery_details, null)
@@ -32,7 +34,7 @@ class DeliveryDetailsDialog(private val context: Context) {
 
         dialog.setView(view, 0, 0, 0, 0)
         // Setup views
-        val customerNameTextView = view.findViewById<TextView>(R.id.dialog_customer_name_text_view)
+        val nameTextView = view.findViewById<TextView>(R.id.dialog_name_text_view)
         val priceTextView = view.findViewById<TextView>(R.id.dialog_price_text_view)
         val statusTextView = view.findViewById<TextView>(R.id.dialog_status_text_view)
         val statusBadge = view.findViewById<LinearLayout>(R.id.dialog_status_badge_linear_layout)
@@ -45,7 +47,7 @@ class DeliveryDetailsDialog(private val context: Context) {
         val closeButton = view.findViewById<TextView>(R.id.dialog_close_button)
 
         // Populate data
-        customerNameTextView.text = delivery.customerName
+        nameTextView.text = if (showDriverName) delivery.driverName else delivery.customerName
         priceTextView.text = String.format(Locale.getDefault(), "$%.2f", delivery.price)
         statusTextView.text = delivery.status
 
@@ -64,10 +66,8 @@ class DeliveryDetailsDialog(private val context: Context) {
         destinationAddressTextView.text = delivery.destinationLocation.address
 
         // Set description
-        descriptionTextView.text = if (delivery.description.isBlank()) {
-            "No description provided"
-        } else {
-            delivery.description
+        descriptionTextView.text = delivery.description.ifBlank {
+            "No description"
         }
 
         // Set image
@@ -77,8 +77,13 @@ class DeliveryDetailsDialog(private val context: Context) {
             imageView.setImageResource(R.drawable.ic_placeholder_image)
         }
 
-        // Setup buttons
-        setupActionButtons(delivery, buttonsContainer, dialog, onStatusChanged)
+        // Setup buttons (only when allowed)
+        if (showActions) {
+            setupActionButtons(delivery, buttonsContainer, dialog, onStatusChanged)
+        } else {
+            // hide the buttons container to avoid empty spacing
+            buttonsContainer?.let { it.visibility = android.view.View.GONE }
+        }
 
         // Close button
         closeButton.setOnClickListener {
