@@ -15,7 +15,13 @@
         android:id="@+id/customerNewOrderFragment"
         android:name="com.example.mobilefinalproject.ui.customer.CustomerNewOrderFragment"
         android:label="New Order"
-        tools:layout="@layout/fragment_customer_new_order" />
+        tools:layout="@layout/fragment_customer_new_order">
+        <action
+            android:id="@+id/action_customerNewOrderFragment_to_customerHomeFragment"
+            app:destination="@id/customerHomeFragment"
+            app:popUpTo="@id/customerHomeFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
 
     <fragment
         android:id="@+id/customerMyOrdersFragment"
@@ -27,6 +33,16 @@
         android:id="@+id/customerProfileFragment"
         android:name="com.example.mobilefinalproject.ui.customer.CustomerProfileFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_customer_profile" />
+        tools:layout="@layout/fragment_customer_profile">
+        <action
+            android:id="@+id/action_customerProfileFragment_to_customerEditProfileFragment"
+            app:destination="@id/customerEditProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/customerEditProfileFragment"
+        android:name="com.example.mobilefinalproject.ui.customer.CustomerEditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_customer_edit_profile" />
 
 </navigation>

@@ -19,4 +19,39 @@
 <!--    <string name="enter_email">your@email.com</string>-->
 <!--    <string name="create_account">Create Account</string>-->
 <!--    <string name="already_have_account">Already have an account?</string>-->
+    <string name="my_orders_title">My Orders</string>
+    <string name="my_orders_subtitle">Go over your pending orders</string>
+    <string name="filters_label">Filter Orders:</string>
+    <string name="sample_customer_name">Emily Davis</string>
+    <string name="sample_price">$21.25</string>
+    <string name="sample_status_pending">Pending</string>
+    <string name="sample_date_time">2025-12-27 | 10:00</string>
+    <string name="from_label">From</string>
+    <string name="to_label">To</string>
+    <string name="sample_pickup_address">555 Maple Dr, North</string>
+    <string name="sample_destination_address">888 Cedar Ln, South</string>
+    <string name="load_image">Load Image</string>
+    <string name="active_delivery_customer_label">Customer Name</string>
+    <string name="active_delivery_separator">|</string>
+    <string name="active_delivery_status_label">Status</string>
+    <string name="active_delivery_pickup_label">Pickup</string>
+    <string name="active_delivery_pickup_time_format">%1$s • %2$s</string>
+    <string name="active_delivery_address_time_label">Address | Time</string>
+    <string name="active_delivery_destination_label">Destination</string>
+    <string name="active_delivery_address_label">Address</string>
+    <string name="active_delivery_location_icon_pickup">🏠</string>
+    <string name="active_delivery_location_icon_destination">📍</string>
+    <string-array name="customer_order_status_filter_options">
+        <item>All</item>
+        <item>Pending</item>
+        <item>Accepted</item>
+        <item>In Progress</item>
+        <item>Completed</item>
+    </string-array>
+    <string name="finder_sample_customer_name">Emily Davis</string>
+    <string name="finder_sample_price">$21.25</string>
+    <string name="finder_sample_time">2025-12-27 • 10:00</string>
+    <string name="finder_sample_pickup_address">555 Maple Dr, North</string>
+    <string name="finder_sample_destination_address">888 Cedar Ln, South</string>
+    <string name="delivery_image">Delivery Image</string>
 </resources>

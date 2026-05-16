@@ -1,15 +1,18 @@
 package com.example.mobilefinalproject.models
 
+import android.net.Uri
+import java.io.Serializable
 import java.util.Date
 
 data class Delivery(
     val id: String,
     val customerName: String,
+    val customerId: String,
     val status: String,
     val price: Double,
     val date: Date,
-    val pickupAddress: String,
-    val dropoffAddress: String,
-    val phoneNumber: String,
-    val rating: Int,
-)
+    val pickupLocation: Location,
+    val destinationLocation: Location,
+    val description: String = "",
+    val imageUri: Uri? = null,
+) : Serializable

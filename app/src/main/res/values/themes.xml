@@ -11,4 +11,10 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="RoundedDialog" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="android:windowBackground">@drawable/rounded_dialog_background</item>
+        <item name="android:windowNoTitle">false</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
 </resources>

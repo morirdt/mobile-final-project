@@ -24,9 +24,4 @@ class CustomerHomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // TODO: Implement Home fragment content
     }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
-    }
 }
