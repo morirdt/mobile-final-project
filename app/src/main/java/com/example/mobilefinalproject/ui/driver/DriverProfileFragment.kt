@@ -11,33 +11,26 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.databinding.FragmentDriverProfileBinding
 import com.example.mobilefinalproject.models.driver.Driver
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 
 class DriverProfileFragment : Fragment() {
     private val driverViewModel: DriverViewModel by activityViewModels()
     private var driver: Driver? = null
-
-    private lateinit var driverNameTextView: TextView
-    private lateinit var driverIdTextView: TextView
-    private lateinit var editProfileButton: Button
-    private lateinit var logoutButton: Button
+    private var binding: FragmentDriverProfileBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_driver_profile, container, false)
+        binding = FragmentDriverProfileBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        driverNameTextView = view.findViewById(R.id.driver_name_text_view)
-        driverIdTextView = view.findViewById(R.id.driver_id_text_view)
-        editProfileButton = view.findViewById(R.id.edit_profile_icon_button
-        )
-        logoutButton = view.findViewById(R.id.logout_button)
 
         driverViewModel.driver.observe(viewLifecycleOwner) { driver ->
             this.driver = driver
@@ -45,19 +38,19 @@ class DriverProfileFragment : Fragment() {
         }
 
         // Setup edit profile button click listener
-        editProfileButton.setOnClickListener {
+        binding?.driverProfileEditButton?.setOnClickListener {
             findNavController().navigate(R.id.action_driverProfileFragment_to_driverEditProfileFragment)
         }
 
         // Setup logout button click listener
-        logoutButton.setOnClickListener {
+        binding?.driverProfileLogoutButton?.setOnClickListener {
             logout()
         }
     }
 
     private fun updateUI() {
-        driverNameTextView.text = this.driver?.fullName
-        driverIdTextView.text = this.driver?.id
+        binding?.driverProfileNameTextView?.text = this.driver?.fullName
+        binding?.driverProfileIdTextView?.text = this.driver?.id
     }
 
     private fun logout() {

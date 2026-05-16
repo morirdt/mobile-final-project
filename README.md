@@ -10,7 +10,11 @@ This project now includes a map-first delivery finder experience in `DriverFinde
 - A distinct current-location indicator
 - Marker selection opens a delivery detail bottom sheet
 - Lightweight clustering behavior for dense map areas
-- Unit + instrumentation test coverage for map behavior
+- Customer dashboard with order counters and quick actions
+- Customer My Orders list with status filtering
+- Customer New Order flow with address/date/time/description/budget validation
+- Places autocomplete support with manual-address fallback when no Maps API key is set
+- Unit + instrumentation test coverage for map behavior and customer data flow
 
 ## Verified commands
 
@@ -31,4 +35,5 @@ cd /home/razbro/Repos/mobile-final-project
 cd /home/razbro/Repos/mobile-final-project
 ./gradlew :app:connectedDebugAndroidTest --no-daemon
 ```
+
 

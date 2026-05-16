@@ -1,4 +1,4 @@
-package com.example.mobilefinalproject.ui.driver
+package com.example.mobilefinalproject.ui.customer
 
 import android.net.Uri
 import android.os.Bundle
@@ -12,13 +12,15 @@ import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.mobilefinalproject.databinding.FragmentDriverEditProfileBinding
-import com.example.mobilefinalproject.viewmodels.DriverViewModel
+import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
+import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.squareup.picasso.Picasso
 
-class DriverEditProfileFragment : Fragment() {
-    private val driverViewModel: DriverViewModel by activityViewModels()
-    private var binding: FragmentDriverEditProfileBinding? = null
+class CustomerEditProfileFragment : Fragment() {
+
+    private val customerViewModel: CustomerViewModel by activityViewModels()
+    private var binding: FragmentCustomerEditProfileBinding? = null
     private var selectedImageUri: Uri? = null
 
     // Image picker launcher
@@ -27,7 +29,7 @@ class DriverEditProfileFragment : Fragment() {
     ) { uri ->
         uri?.let {
             selectedImageUri = it
-            binding?.driverEditProfileImageView?.let { imageView ->
+            binding?.customerEditProfileImageView?.let { imageView ->
                 Picasso.get()
                     .load(selectedImageUri)
                     .into(imageView)
@@ -47,33 +49,35 @@ class DriverEditProfileFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentDriverEditProfileBinding.inflate(inflater, container, false)
+        binding = FragmentCustomerEditProfileBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observe driver data and populate fields
-        driverViewModel.driver.observe(viewLifecycleOwner) { driver ->
-            if (driver != null) {
-                binding?.driverEditProfileFullNameEditText?.setText(driver.fullName)
-                binding?.driverEditProfileIdEditText?.setText(driver.id)
+        // Observe customer data and populate fields
+        customerViewModel.customer.observe(viewLifecycleOwner) { customer ->
+            if (customer != null) {
+                binding?.customerEditProfileFullNameEditText?.setText(customer.fullName)
+                binding?.customerEditProfileIdEditText?.setText(customer.id)
             }
         }
 
         // Setup button click listeners
-        binding?.driverEditProfileSaveButton?.setOnClickListener {
+        binding?.customerEditProfileSaveButton?.setOnClickListener {
             saveProfile()
         }
 
-        binding?.driverEditProfileCancelButton?.setOnClickListener {
+        binding?.customerEditProfileCancelButton?.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        binding?.driverEditProfileChangePictureButton?.setOnClickListener {
+        binding?.customerEditProfileChangePictureButton?.setOnClickListener {
             checkAndRequestGalleryPermission()
         }
     }
@@ -102,19 +106,24 @@ class DriverEditProfileFragment : Fragment() {
 
     private fun saveProfile() {
         val binding = binding ?: return
-        val updatedFullName = binding.driverEditProfileFullNameEditText.text.toString().trim()
+        val updatedFullName = binding.customerEditProfileFullNameEditText.text.toString().trim()
 
         if (updatedFullName.isEmpty()) {
-            binding.driverEditProfileFullNameEditText.error = "Full name cannot be empty"
+            binding.customerEditProfileFullNameEditText.error = "Full name cannot be empty"
             return
         }
 
-        // Get current driver from ViewModel
-        val currentDriver = driverViewModel.driver.value
-        if (currentDriver != null) {
-            val updatedDriver = currentDriver.copy(fullName = updatedFullName)
-            driverViewModel.updateDriver(updatedDriver)
+        // Get current customer from ViewModel
+        val currentCustomer = customerViewModel.customer.value
+        if (currentCustomer != null) {
+            val updatedCustomer = currentCustomer.copy(fullName = updatedFullName)
+            customerViewModel.updateCustomer(updatedCustomer)
             findNavController().navigateUp()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
     }
 }

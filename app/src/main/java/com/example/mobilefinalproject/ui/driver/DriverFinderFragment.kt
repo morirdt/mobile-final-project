@@ -32,21 +32,18 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 class DriverFinderFragment : Fragment() {
-
     private val deliveryViewModel: DeliveryViewModel by activityViewModels()
 
     private lateinit var mapView: MapView
     private var myLocationOverlay: MyLocationNewOverlay? = null
     private val deliveryMarkers = mutableListOf<Marker>()
 
-    // Default center: Tel Aviv
     private val defaultCenter = GeoPoint(32.0853, 34.7818)
 
-    // ── Permission launcher ────────────────────────────────────────────────────
     private val locationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
             val granted = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
-                          grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+                grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
             if (granted) {
                 enableMyLocation()
             } else {
@@ -54,9 +51,9 @@ class DriverFinderFragment : Fragment() {
             }
         }
 
-    // ── Lifecycle ──────────────────────────────────────────────────────────────
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         Configuration.getInstance().userAgentValue = requireContext().packageName
@@ -74,6 +71,7 @@ class DriverFinderFragment : Fragment() {
         } else {
             checkLocationPermission()
         }
+
         mapView.setOnTouchListener { _, event ->
             if (event.actionMasked == MotionEvent.ACTION_UP) {
                 refreshClusteredMarkers(deliveryViewModel.deliveries.value.orEmpty())
@@ -82,7 +80,6 @@ class DriverFinderFragment : Fragment() {
             false
         }
 
-        // "My Location" button
         view.findViewById<MaterialButton>(R.id.btn_my_location).setOnClickListener {
             val location = myLocationOverlay?.myLocation
             if (location != null) {
@@ -93,12 +90,10 @@ class DriverFinderFragment : Fragment() {
             }
         }
 
-        // Dismiss denied-banner
         view.findViewById<ImageButton>(R.id.btn_dismiss_banner).setOnClickListener {
             view.findViewById<MaterialCardView>(R.id.location_denied_banner).visibility = View.GONE
         }
 
-        // Observe selected delivery → open bottom sheet
         deliveryViewModel.selectedDelivery.observe(viewLifecycleOwner) { delivery ->
             if (delivery != null) {
                 val tag = DeliveryDetailBottomSheet.TAG
@@ -126,7 +121,6 @@ class DriverFinderFragment : Fragment() {
         mapView.onDetach()
     }
 
-    // ── Map setup ──────────────────────────────────────────────────────────────
     private fun setupMap() {
         mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
@@ -136,9 +130,9 @@ class DriverFinderFragment : Fragment() {
         mapView.maxZoomLevel = 20.0
     }
 
-    // ── Delivery markers ───────────────────────────────────────────────────────
     private fun loadDeliveryMarkers() {
         deliveryViewModel.setDeliveries(MockDeliveryDataSource.deliveries)
+        deliveryViewModel.setPendingDeliveries(MockDeliveryDataSource.getPendingDeliveries())
 
         deliveryViewModel.deliveries.observe(viewLifecycleOwner) { deliveries ->
             refreshClusteredMarkers(deliveries)
@@ -213,7 +207,6 @@ class DriverFinderFragment : Fragment() {
         DriverFinderMapClusterer.MarkerType.DROPOFF -> "D"
     }
 
-    // ── GPS / My Location ──────────────────────────────────────────────────────
     private fun checkLocationPermission() {
         val hasFine = ContextCompat.checkSelfPermission(
             requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
@@ -237,9 +230,7 @@ class DriverFinderFragment : Fragment() {
     private fun enableMyLocation() {
         mapView.overlays.removeAll { it is MyLocationNewOverlay }
 
-        myLocationOverlay = MyLocationNewOverlay(
-            GpsMyLocationProvider(requireContext()), mapView
-        ).apply {
+        myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(requireContext()), mapView).apply {
             enableMyLocation()
             enableFollowLocation()
             runOnFirstFix {
@@ -255,8 +246,7 @@ class DriverFinderFragment : Fragment() {
     }
 
     private fun showLocationDeniedBanner() {
-        view?.findViewById<MaterialCardView>(R.id.location_denied_banner)
-            ?.visibility = View.VISIBLE
+        view?.findViewById<MaterialCardView>(R.id.location_denied_banner)?.visibility = View.VISIBLE
     }
 
     private fun shouldSkipLocationPermissionCheck(): Boolean {
@@ -276,7 +266,6 @@ class DriverFinderFragment : Fragment() {
 
     internal fun currentZoomLevel(): Double = mapView.zoomLevelDouble
 
-    // ── Marker icon factory ────────────────────────────────────────────────────
     private fun makeCircleMarker(bgColor: Int, label: String): BitmapDrawable {
         val size = 80
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)

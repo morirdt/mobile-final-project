@@ -58,7 +58,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Close"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:tint="@color/black" />
+            app:tint="@color/black" />
     </LinearLayout>
 
     <!-- Divider -->
@@ -222,4 +222,5 @@
     </LinearLayout>
 
 </LinearLayout>
+
 
