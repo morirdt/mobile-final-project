@@ -47,18 +47,13 @@ class CustomerProfileFragment : Fragment() {
     }
 
     private fun updateUI() {
-        binding?.customerProfileNameTextView?.text = this.customer?.fullName ?: "Customer"
-        binding?.customerProfileIdTextView?.text = this.customer?.id ?: "-"
+        binding?.customerProfileNameTextView?.text = this.customer?.fullName
+        binding?.customerProfileIdTextView?.text = this.customer?.id
     }
 
     private fun logout() {
         customerViewModel.clearCustomer()
         val parentNavController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
         parentNavController.navigate(R.id.action_global_loginFragment)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
     }
 }

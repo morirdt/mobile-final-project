@@ -23,7 +23,8 @@ class DeliveryDetailsDialog(private val context: Context) {
         delivery: Delivery,
         onStatusChanged: (() -> Unit)? = null,
         showActions: Boolean = true,
-        showDriverName: Boolean = false
+        showDriverName: Boolean = false,
+        onDismiss: (() -> Unit)? = null
     ) {
         val view = android.view.LayoutInflater.from(context)
             .inflate(R.layout.dialog_delivery_details, null)
@@ -88,6 +89,11 @@ class DeliveryDetailsDialog(private val context: Context) {
         // Close button
         closeButton.setOnClickListener {
             dialog.dismiss()
+        }
+
+        // notify caller when dialog is dismissed (either via close button or user)
+        dialog.setOnDismissListener {
+            onDismiss?.invoke()
         }
 
         dialog.show()

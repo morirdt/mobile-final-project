@@ -6,20 +6,22 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.models.Delivery
 import com.example.mobilefinalproject.models.MockDeliveryDataSource
+import com.example.mobilefinalproject.ui.dialogs.DeliveryDetailsDialog
 import com.example.mobilefinalproject.viewmodels.DeliveryViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -66,18 +68,11 @@ class DriverFinderFragment : Fragment() {
         mapView = view.findViewById(R.id.map_view)
         setupMap()
         loadDeliveryMarkers()
+
         if (shouldSkipLocationPermissionCheck()) {
             showLocationDeniedBanner()
         } else {
             checkLocationPermission()
-        }
-
-        mapView.setOnTouchListener { _, event ->
-            if (event.actionMasked == MotionEvent.ACTION_UP) {
-                refreshClusteredMarkers(deliveryViewModel.deliveries.value.orEmpty())
-                mapView.invalidate()
-            }
-            false
         }
 
         view.findViewById<MaterialButton>(R.id.btn_my_location).setOnClickListener {
@@ -96,10 +91,17 @@ class DriverFinderFragment : Fragment() {
 
         deliveryViewModel.selectedDelivery.observe(viewLifecycleOwner) { delivery ->
             if (delivery != null) {
-                val tag = DeliveryDetailBottomSheet.TAG
-                if (parentFragmentManager.findFragmentByTag(tag) == null) {
-                    DeliveryDetailBottomSheet().show(parentFragmentManager, tag)
-                }
+                DeliveryDetailsDialog(requireContext()).show(
+                    delivery = delivery,
+                    onStatusChanged = {
+                        deliveryViewModel.setPendingDeliveries(MockDeliveryDataSource.getPendingDeliveries())
+                    },
+                    showActions = true,
+                    showDriverName = false,
+                    onDismiss = {
+                        deliveryViewModel.selectDelivery(null)
+                    }
+                )
             }
         }
     }
@@ -131,10 +133,9 @@ class DriverFinderFragment : Fragment() {
     }
 
     private fun loadDeliveryMarkers() {
-        deliveryViewModel.setDeliveries(MockDeliveryDataSource.deliveries)
         deliveryViewModel.setPendingDeliveries(MockDeliveryDataSource.getPendingDeliveries())
 
-        deliveryViewModel.deliveries.observe(viewLifecycleOwner) { deliveries ->
+        deliveryViewModel.pendingDeliveries.observe(viewLifecycleOwner) { deliveries ->
             refreshClusteredMarkers(deliveries)
             mapView.invalidate()
         }
@@ -176,7 +177,7 @@ class DriverFinderFragment : Fragment() {
     private fun addClusterMarker(cluster: DriverFinderMapClusterer.Cluster) {
         val marker = Marker(mapView).apply {
             position = GeoPoint(cluster.centerLatitude, cluster.centerLongitude)
-            icon = makeCircleMarker(Color.parseColor("#1565C0"), cluster.points.size.toString())
+            icon = makeCircleMarker("#1565C0".toColorInt(), cluster.points.size.toString())
             title = getString(R.string.locations_nearby, cluster.points.size)
             snippet = getString(R.string.zoom_in_for_orders)
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
@@ -190,16 +191,14 @@ class DriverFinderFragment : Fragment() {
     }
 
     private fun clearDeliveryMarkers() {
-        if (deliveryMarkers.isEmpty()) {
-            return
-        }
+        if (deliveryMarkers.isEmpty()) return
         mapView.overlays.removeAll(deliveryMarkers.toSet())
         deliveryMarkers.clear()
     }
 
     private fun markerColor(markerType: DriverFinderMapClusterer.MarkerType): Int = when (markerType) {
-        DriverFinderMapClusterer.MarkerType.PICKUP -> Color.parseColor("#2E7D32")
-        DriverFinderMapClusterer.MarkerType.DROPOFF -> Color.parseColor("#C62828")
+        DriverFinderMapClusterer.MarkerType.PICKUP -> "#2E7D32".toColorInt()
+        DriverFinderMapClusterer.MarkerType.DROPOFF -> "#C62828".toColorInt()
     }
 
     private fun markerLabel(markerType: DriverFinderMapClusterer.MarkerType): String = when (markerType) {
@@ -253,22 +252,20 @@ class DriverFinderFragment : Fragment() {
         return arguments?.getBoolean(ARG_SKIP_LOCATION_PERMISSION_CHECK, false) == true
     }
 
-    internal fun handleDeliverySelection(delivery: Delivery) {
+    fun handleDeliverySelection(delivery: Delivery) {
         deliveryViewModel.selectDelivery(delivery)
     }
 
-    internal fun zoomIntoCluster(centerLatitude: Double, centerLongitude: Double) {
+    fun zoomIntoCluster(centerLatitude: Double, centerLongitude: Double) {
         mapView.controller.animateTo(GeoPoint(centerLatitude, centerLongitude))
         mapView.controller.setZoom(DriverFinderMapClusterer.nextClusterZoom(mapView.zoomLevelDouble))
-        refreshClusteredMarkers(deliveryViewModel.deliveries.value.orEmpty())
+        refreshClusteredMarkers(deliveryViewModel.pendingDeliveries.value.orEmpty())
         mapView.invalidate()
     }
 
-    internal fun currentZoomLevel(): Double = mapView.zoomLevelDouble
-
-    private fun makeCircleMarker(bgColor: Int, label: String): BitmapDrawable {
+    private fun makeCircleMarker(bgColor: Int, label: String): android.graphics.drawable.Drawable {
         val size = 80
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
 
         val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -296,7 +293,7 @@ class DriverFinderFragment : Fragment() {
         val textY = cy - (textPaint.ascent() + textPaint.descent()) / 2
         canvas.drawText(label, cx, textY, textPaint)
 
-        return BitmapDrawable(resources, bitmap)
+        return bitmap.toDrawable(resources)
     }
 
     companion object {
