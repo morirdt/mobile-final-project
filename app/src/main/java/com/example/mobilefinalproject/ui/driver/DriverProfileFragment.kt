@@ -5,14 +5,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentDriverProfileBinding
 import com.example.mobilefinalproject.models.driver.Driver
+import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 
 class DriverProfileFragment : Fragment() {
@@ -55,6 +54,7 @@ class DriverProfileFragment : Fragment() {
 
     private fun logout() {
         driverViewModel.clearDriver()
+        UserSessionManager.clearSession(requireContext())
         val parentNavController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
         parentNavController.navigate(R.id.action_global_loginFragment)
     }

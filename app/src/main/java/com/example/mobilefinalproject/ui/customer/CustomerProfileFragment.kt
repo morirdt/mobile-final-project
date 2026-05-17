@@ -10,6 +10,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.models.Customer
+import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.example.mobilefinalproject.databinding.FragmentCustomerProfileBinding
 
@@ -53,6 +54,7 @@ class CustomerProfileFragment : Fragment() {
 
     private fun logout() {
         customerViewModel.clearCustomer()
+        UserSessionManager.clearSession(requireContext())
         val parentNavController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
         parentNavController.navigate(R.id.action_global_loginFragment)
     }

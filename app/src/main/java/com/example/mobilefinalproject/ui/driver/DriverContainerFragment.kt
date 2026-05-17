@@ -11,14 +11,13 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentDriverContainerBinding
 import com.example.mobilefinalproject.models.driver.Driver
+import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class DriverContainerFragment : Fragment() {
 
     private var binding: FragmentDriverContainerBinding? = null
 
-    private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var driverViewModel: DriverViewModel
 
     override fun onCreateView(
@@ -36,11 +35,16 @@ class DriverContainerFragment : Fragment() {
         // Initialize ViewModel at activity scope
         driverViewModel = ViewModelProvider(requireActivity())[DriverViewModel::class.java]
 
-        // TODO: Get driver from arguments or authentication
-        val driver = Driver("123456789", "John Driver")
+        val driver = driverViewModel.driver.value
+            ?: UserSessionManager.restoreDriver(requireContext())
+            ?: Driver("123456789", "John Driver")
 
-        // Set driver in ViewModel (accessible throughout the app)
-        driverViewModel.setDriver(driver)
+        if (driverViewModel.driver.value == null) {
+            driverViewModel.setDriver(driver)
+        }
+        if (!UserSessionManager.hasSession(requireContext())) {
+            UserSessionManager.saveDriver(requireContext(), driver)
+        }
 
         // Get NavController from nested NavHostFragment
         val navHostFragment = binding?.let {

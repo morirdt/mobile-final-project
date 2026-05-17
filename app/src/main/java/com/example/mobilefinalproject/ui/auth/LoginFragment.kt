@@ -5,13 +5,21 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.databinding.FragmentLoginBinding
+import com.example.mobilefinalproject.models.Customer
+import com.example.mobilefinalproject.models.driver.Driver
+import com.example.mobilefinalproject.session.UserSessionManager
+import com.example.mobilefinalproject.viewmodels.CustomerViewModel
+import com.example.mobilefinalproject.viewmodels.DriverViewModel
 import com.google.android.material.button.MaterialButton
 
 class LoginFragment : Fragment() {
 
     private var binding: FragmentLoginBinding? = null
+    private val driverViewModel: DriverViewModel by activityViewModels()
+    private val customerViewModel: CustomerViewModel by activityViewModels()
 
     private var selectedUserType: UserType = UserType.DRIVER
 
@@ -30,9 +38,33 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        if (savedInstanceState == null && tryRestoreSavedSession()) {
+            return
+        }
+
         setupUserTypeToggle()
         setupRegisterLink()
         setupLoginButton()
+    }
+
+    private fun tryRestoreSavedSession(): Boolean {
+        val session = UserSessionManager.getSession(requireContext()) ?: return false
+
+        when (session.userType) {
+            UserSessionManager.UserType.DRIVER -> {
+                val driver = Driver(session.userId, session.fullName)
+                driverViewModel.setDriver(driver)
+                findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_driverContainerFragment)
+            }
+            UserSessionManager.UserType.CUSTOMER -> {
+                val customer = Customer(session.userId, session.fullName)
+                customerViewModel.setCustomer(customer)
+                findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_customerContainerFragment)
+            }
+        }
+
+        return true
     }
 
     private fun setupLoginButton() {
@@ -41,11 +73,15 @@ class LoginFragment : Fragment() {
             // For now, assume successful login
             when (selectedUserType) {
                 UserType.DRIVER -> {
-                    // Navigate to Driver Container Fragment using Navigation Component
+                    val driver = Driver("123456789", "John Driver")
+                    driverViewModel.setDriver(driver)
+                    UserSessionManager.saveDriver(requireContext(), driver)
                     findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_driverContainerFragment)
                 }
                 UserType.CUSTOMER -> {
-                    // Navigate to Customer Container Fragment using Navigation Component
+                    val customer = Customer("123456789", "John Customer")
+                    customerViewModel.setCustomer(customer)
+                    UserSessionManager.saveCustomer(requireContext(), customer)
                     findNavController().navigate(com.example.mobilefinalproject.R.id.action_loginFragment_to_customerContainerFragment)
                 }
             }

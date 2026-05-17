@@ -12,8 +12,8 @@ import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
+import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.squareup.picasso.Picasso
 
@@ -83,11 +83,8 @@ class CustomerEditProfileFragment : Fragment() {
     }
 
     private fun checkAndRequestGalleryPermission() {
-        val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        val permission =
             android.Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            android.Manifest.permission.READ_EXTERNAL_STORAGE
-        }
 
         when {
             ContextCompat.checkSelfPermission(
@@ -118,6 +115,7 @@ class CustomerEditProfileFragment : Fragment() {
         if (currentCustomer != null) {
             val updatedCustomer = currentCustomer.copy(fullName = updatedFullName)
             customerViewModel.updateCustomer(updatedCustomer)
+            UserSessionManager.saveCustomer(requireContext(), updatedCustomer)
             findNavController().navigateUp()
         }
     }
