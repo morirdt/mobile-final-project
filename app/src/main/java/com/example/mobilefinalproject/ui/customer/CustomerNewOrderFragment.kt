@@ -438,7 +438,7 @@ class CustomerNewOrderFragment : Fragment() {
             pickupLocation = pickup,
             destinationLocation = destination,
             description = description,
-            imageUri = selectedImageUri
+            imageUriString = selectedImageUri?.toString()
         )
 
         MockDeliveryDataSource.addDelivery(newDelivery)

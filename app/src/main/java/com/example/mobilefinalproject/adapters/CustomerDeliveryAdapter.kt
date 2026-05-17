@@ -9,6 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 // ...existing imports...
 import androidx.core.graphics.toColorInt
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.DialogDeliveryImagePreviewBinding
@@ -17,6 +18,7 @@ import com.example.mobilefinalproject.models.Delivery
 import com.example.mobilefinalproject.models.DeliveryStatus
 import com.example.mobilefinalproject.models.MockDeliveryDataSource
 import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
+import com.example.mobilefinalproject.ui.customer.CustomerMyOrdersFragmentDirections
 import com.example.mobilefinalproject.ui.dialogs.DeliveryDetailsDialog
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -142,7 +144,8 @@ class CustomerDeliveryAdapter(
                             (bindingAdapter as? CustomerDeliveryAdapter)?.onDeliveryStatusChanged?.invoke()
                         }
                         text.equals("Edit", ignoreCase = true) -> {
-                            Toast.makeText(itemView.context, "Edit not implemented", Toast.LENGTH_SHORT).show()
+                            val action = CustomerMyOrdersFragmentDirections.actionCustomerMyOrdersFragmentToCustomerEditOrderFragment(delivery)
+                            itemView.findNavController().navigate(action)
                         }
                         text.equals("Details", ignoreCase = true) -> {
                             DeliveryDetailsDialog(itemView.context).show(

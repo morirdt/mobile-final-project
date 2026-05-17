@@ -73,6 +73,13 @@ object MockDeliveryDataSource {
         }
     }
 
+    fun updateDelivery(delivery: Delivery) {
+        val index = deliveries.indexOfFirst { it.id == delivery.id }
+        if (index != -1) {
+            deliveries[index] = delivery
+        }
+    }
+
     fun getPendingDeliveries(): List<Delivery> =
         deliveries.filter { it.status == DeliveryStatus.PENDING.label }
 

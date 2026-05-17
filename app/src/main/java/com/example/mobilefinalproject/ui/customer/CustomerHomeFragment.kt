@@ -32,11 +32,11 @@ class CustomerHomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding?.customerHomeNewOrderButton?.setOnClickListener {
-            findNavController().navigate(com.example.mobilefinalproject.R.id.customerNewOrderFragment)
+            findNavController().navigate(com.example.mobilefinalproject.R.id.action_customerHomeFragment_to_customerNewOrderFragment)
         }
 
         binding?.customerHomeMyOrdersButton?.setOnClickListener {
-            findNavController().navigate(com.example.mobilefinalproject.R.id.customerMyOrdersFragment)
+            findNavController().navigate(com.example.mobilefinalproject.R.id.action_customerHomeFragment_to_customerMyOrdersFragment)
         }
 
         customerViewModel.customer.observe(viewLifecycleOwner) { customer ->

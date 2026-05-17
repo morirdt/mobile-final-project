@@ -5,9 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.mobilefinalproject"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.mobilefinalproject"
@@ -85,8 +83,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.fragment.ktx)
-    implementation(libs.osmdroid.android)
-    debugImplementation(libs.androidx.fragment.testing)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    debugImplementation("androidx.fragment:fragment-testing:1.8.5")
     implementation("com.google.android.libraries.places:places:3.3.0")
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
@@ -94,5 +92,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.fragment.testing)
+    debugImplementation("androidx.fragment:fragment-testing:1.8.5")
 }
