@@ -1,29 +1,29 @@
 package com.example.mobilefinalproject.ui.dialogs
 
 import android.content.Context
-// ...existing imports...
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.example.mobilefinalproject.R
-import com.example.mobilefinalproject.models.Delivery
-import com.example.mobilefinalproject.models.DeliveryStatus
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
 import com.example.mobilefinalproject.models.driver.ButtonConfig
 import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
+import com.example.mobilefinalproject.network.dto.OrderRead
+import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Locale
-
 
 class DeliveryDetailsDialog(private val context: Context) {
 
     fun show(
-        delivery: Delivery,
-        onStatusChanged: (() -> Unit)? = null,
+        order: OrderRead,
+        onAccept: (() -> Unit)? = null,
+        onStart: (() -> Unit)? = null,
+        onComplete: (() -> Unit)? = null,
+        onCancel: (() -> Unit)? = null,
         showActions: Boolean = true,
-        showDriverName: Boolean = false,
+        showDriverInfo: Boolean = false,
         onDismiss: (() -> Unit)? = null
     ) {
         val view = android.view.LayoutInflater.from(context)
@@ -34,166 +34,131 @@ class DeliveryDetailsDialog(private val context: Context) {
             .create()
 
         dialog.setView(view, 0, 0, 0, 0)
-        // Setup views
-        val nameTextView = view.findViewById<TextView>(R.id.dialog_name_text_view)
-        val priceTextView = view.findViewById<TextView>(R.id.dialog_price_text_view)
-        val statusTextView = view.findViewById<TextView>(R.id.dialog_status_text_view)
-        val statusBadge = view.findViewById<LinearLayout>(R.id.dialog_status_badge_linear_layout)
-        val dateTimeTextView = view.findViewById<TextView>(R.id.dialog_date_time_text_view)
-        val pickupAddressTextView = view.findViewById<TextView>(R.id.dialog_pickup_address_text_view)
-        val destinationAddressTextView = view.findViewById<TextView>(R.id.dialog_destination_address_text_view)
-        val descriptionTextView = view.findViewById<TextView>(R.id.dialog_description_text_view)
-        val imageView = view.findViewById<ImageView>(R.id.dialog_delivery_image_view)
-        val buttonsContainer = view.findViewById<LinearLayout>(R.id.dialog_buttons_container_linear_layout)
-        val closeButton = view.findViewById<TextView>(R.id.dialog_close_button)
 
-        // Populate data
-        nameTextView.text = if (showDriverName) delivery.driverName else delivery.customerName
-        priceTextView.text = String.format(Locale.getDefault(), "$%.2f", delivery.price)
-        statusTextView.text = delivery.status
+        val nameTextView       = view.findViewById<TextView>(R.id.dialog_name_text_view)
+        val priceTextView      = view.findViewById<TextView>(R.id.dialog_price_text_view)
+        val statusTextView     = view.findViewById<TextView>(R.id.dialog_status_text_view)
+        val statusBadge        = view.findViewById<LinearLayout>(R.id.dialog_status_badge_linear_layout)
+        val dateTimeTextView   = view.findViewById<TextView>(R.id.dialog_date_time_text_view)
+        val pickupTextView     = view.findViewById<TextView>(R.id.dialog_pickup_address_text_view)
+        val destTextView       = view.findViewById<TextView>(R.id.dialog_destination_address_text_view)
+        val descriptionTextView= view.findViewById<TextView>(R.id.dialog_description_text_view)
+        val imageView          = view.findViewById<ImageView>(R.id.dialog_delivery_image_view)
+        val buttonsContainer   = view.findViewById<LinearLayout>(R.id.dialog_buttons_container_linear_layout)
+        val closeButton        = view.findViewById<TextView>(R.id.dialog_close_button)
 
-        // Set status badge styling
-        val config = activeDeliveryConfigs[delivery.status]
-        if (config != null) {
-            statusBadge.setBackgroundResource(config.badgeDrawable)
-        }
+        // Populate
+        nameTextView.text = if (showDriverInfo && order.driverId != null) "Driver #${order.driverId}"
+                            else "Customer #${order.customerId}"
+        priceTextView.text = String.format(Locale.getDefault(), "$%.2f", order.priceCents / 100.0)
+        statusTextView.text = order.status
 
-        // Set date and time
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault())
-        dateTimeTextView.text = dateFormat.format(delivery.date)
+        activeDeliveryConfigs[order.status]?.let { statusBadge.setBackgroundResource(it.badgeDrawable) }
 
-        // Set addresses
-        pickupAddressTextView.text = delivery.pickupLocation.address
-        destinationAddressTextView.text = delivery.destinationLocation.address
+        val timeDisplay = try {
+            val isoFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val displayFmt = SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault())
+            val parsed = isoFmt.parse(order.createdAt.take(19))
+            if (parsed != null) displayFmt.format(parsed) else order.createdAt
+        } catch (_: Exception) { order.createdAt }
+        dateTimeTextView.text = timeDisplay
 
-        // Set description
-        descriptionTextView.text = delivery.description.ifBlank {
-            "No description"
-        }
+        pickupTextView.text = order.pickupAddress
+        destTextView.text   = order.dropoffAddress
+        descriptionTextView.text = order.cargoDescription?.takeIf { it.isNotBlank() } ?: "No description"
 
-        // Set image
-        if (delivery.imageUri != null) {
-            imageView.setImageURI(delivery.imageUri)
+        if (!order.cargoImageUrl.isNullOrBlank()) {
+            Picasso.get().load(order.cargoImageUrl).into(imageView)
         } else {
             imageView.setImageResource(R.drawable.ic_placeholder_image)
         }
 
-        // Setup buttons (only when allowed)
         if (showActions) {
-            setupActionButtons(delivery, buttonsContainer, dialog, onStatusChanged)
+            setupActionButtons(order, buttonsContainer, dialog, onAccept, onStart, onComplete, onCancel)
         } else {
-            // hide the buttons container to avoid empty spacing
-            buttonsContainer?.let { it.visibility = android.view.View.GONE }
+            buttonsContainer?.visibility = android.view.View.GONE
         }
 
-        // Close button
-        closeButton.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        // notify caller when dialog is dismissed (either via close button or user)
-        dialog.setOnDismissListener {
-            onDismiss?.invoke()
-        }
-
+        closeButton.setOnClickListener { dialog.dismiss() }
+        dialog.setOnDismissListener { onDismiss?.invoke() }
         dialog.show()
     }
 
     private fun setupActionButtons(
-        delivery: Delivery,
+        order: OrderRead,
         container: LinearLayout,
         dialog: AlertDialog,
-        onStatusChanged: (() -> Unit)?
+        onAccept: (() -> Unit)?,
+        onStart: (() -> Unit)?,
+        onComplete: (() -> Unit)?,
+        onCancel: (() -> Unit)?
     ) {
-        val buttons = when {
-            delivery.status == DeliveryStatus.PENDING.label -> {
-                // For Pending deliveries, show only Accept button
-                listOf(
-                    ButtonConfig("Accept", R.drawable.button_green, android.graphics.Color.WHITE, 1f)
-                )
-            }
-            else -> {
-                activeDeliveryConfigs[delivery.status]?.buttons ?: emptyList()
-            }
+        val buttons: List<ButtonConfig> = when (order.status) {
+            "pending" -> listOf(
+                ButtonConfig("Accept", R.drawable.button_green, android.graphics.Color.WHITE, 1f)
+            )
+            else -> activeDeliveryConfigs[order.status]?.buttons ?: emptyList()
         }
 
-        // Filter out the Details button from the modal
-        buttons.filter { !it.text.equals("Details", ignoreCase = true) }.forEach { buttonConfig ->
-            addButton(
-                delivery = delivery,
-                container = container,
-                text = buttonConfig.text,
-                backgroundRes = buttonConfig.backgroundRes,
-                textColor = buttonConfig.textColor,
-                weight = buttonConfig.weight,
-                dialog = dialog,
-                onStatusChanged = onStatusChanged
-            )
+        buttons.filter { !it.text.equals("Details", ignoreCase = true) }.forEach { cfg ->
+            addButton(order, container, cfg.text, cfg.backgroundRes, cfg.textColor, cfg.weight, dialog,
+                onAccept, onStart, onComplete, onCancel)
         }
     }
 
     private fun addButton(
-        delivery: Delivery,
-        container: LinearLayout,
-        text: String,
-        backgroundRes: Int,
-        textColor: Int,
-        weight: Float,
+        order: OrderRead, container: LinearLayout,
+        text: String, backgroundRes: Int, textColor: Int, weight: Float,
         dialog: AlertDialog,
-        onStatusChanged: (() -> Unit)?
+        onAccept: (() -> Unit)?,
+        onStart: (() -> Unit)?,
+        onComplete: (() -> Unit)?,
+        onCancel: (() -> Unit)?
     ) {
         val button = LinearLayout(context).apply {
-            layoutParams =
-                LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT).apply {
-                    this.weight = weight
-                    marginEnd = 4.dpToPx()
-                    marginStart = 4.dpToPx()
-                }
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT).apply {
+                this.weight = weight
+                marginEnd = 4.dpToPx()
+                marginStart = 4.dpToPx()
+            }
             setBackgroundResource(backgroundRes)
             gravity = android.view.Gravity.CENTER
             isClickable = true
             isFocusable = true
-                setOnClickListener {
-                    when {
-                        text.equals("Start", ignoreCase = true) && delivery.status == DeliveryStatus.ACCEPTED.label -> {
-                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.IN_PROGRESS.label)
-                            Toast.makeText(context, "Order started", Toast.LENGTH_SHORT).show()
-                            onStatusChanged?.invoke()
-                            dialog.dismiss()
-                        }
-                        text.equals("Complete", ignoreCase = true) && delivery.status == DeliveryStatus.IN_PROGRESS.label -> {
-                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.COMPLETED.label)
-                            Toast.makeText(context, "Order completed", Toast.LENGTH_SHORT).show()
-                            onStatusChanged?.invoke()
-                            dialog.dismiss()
-                        }
-                        text.equals("Accept", ignoreCase = true) && delivery.status == DeliveryStatus.PENDING.label -> {
-                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.ACCEPTED.label)
-                            Toast.makeText(context, "Delivery accepted!", Toast.LENGTH_SHORT).show()
-                            onStatusChanged?.invoke()
-                            dialog.dismiss()
-                        }
-                        text.equals("Cancel", ignoreCase = true) -> {
-                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.PENDING.label)
-                            Toast.makeText(context, "Delivery cancelled", Toast.LENGTH_SHORT).show()
-                            onStatusChanged?.invoke()
-                            dialog.dismiss()
-                        }
+            setOnClickListener {
+                when {
+                    text.equals("Accept", ignoreCase = true) -> {
+                        onAccept?.invoke()
+                        Toast.makeText(context, "Order accepted!", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                    text.equals("Start", ignoreCase = true) -> {
+                        onStart?.invoke()
+                        Toast.makeText(context, "Order started", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                    text.equals("Complete", ignoreCase = true) -> {
+                        onComplete?.invoke()
+                        Toast.makeText(context, "Order completed", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
+                    }
+                    text.equals("Cancel", ignoreCase = true) -> {
+                        onCancel?.invoke()
+                        Toast.makeText(context, "Order cancelled", Toast.LENGTH_SHORT).show()
+                        dialog.dismiss()
                     }
                 }
+            }
         }
-
         val textView = TextView(context).apply {
             this.text = text
             setTextColor(textColor)
             textSize = 12f
         }
-
         button.addView(textView)
         container.addView(button)
     }
 
-    private fun Int.dpToPx(): Int {
-        return (this * context.resources.displayMetrics.density).toInt()
-    }
+    private fun Int.dpToPx(): Int =
+        (this * context.resources.displayMetrics.density).toInt()
 }

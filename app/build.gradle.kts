@@ -44,6 +44,17 @@ android {
         // Expose to BuildConfig for runtime access in code
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
 
+        // BASE_URL for TruckBack API
+        val baseUrl = run {
+            val lp = rootProject.file("local.properties")
+            if (lp.exists()) {
+                val text = lp.readText(Charsets.UTF_8)
+                val regex = Regex("^BASE_URL=(.*)$", RegexOption.MULTILINE)
+                regex.find(text)?.groups?.get(1)?.value?.trim()
+            } else null
+        } ?: System.getenv("BASE_URL") ?: "http://10.0.2.2:8000/"
+        buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
+
         // Also pass into AndroidManifest via manifest placeholders (for Google Maps API meta-data)
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
 
@@ -89,6 +100,12 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
     implementation("com.squareup.picasso:picasso:2.8")
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.core)
+    implementation(libs.okhttp.logging)
+    implementation(libs.gson)
+    implementation(libs.security.crypto)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,24 +1,73 @@
 package com.example.mobilefinalproject.viewmodels
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.example.mobilefinalproject.models.Customer
+import androidx.lifecycle.viewModelScope
+import com.example.mobilefinalproject.network.dto.UserMe
+import com.example.mobilefinalproject.network.dto.UserUpdateRequest
+import com.example.mobilefinalproject.repository.ApiResult
+import com.example.mobilefinalproject.repository.UserRepository
+import com.example.mobilefinalproject.session.UserSessionManager
+import kotlinx.coroutines.launch
 
-class CustomerViewModel : ViewModel() {
+class CustomerViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val _customer = MutableLiveData<Customer?>()
-    val customer: LiveData<Customer?> = _customer
+    private val repo = UserRepository(application)
 
-    fun setCustomer(customer: Customer) {
-        _customer.value = customer
+    private val _userMe = MutableLiveData<UserMe?>()
+    val userMe: LiveData<UserMe?> = _userMe
+
+    private val _error = MutableLiveData<String?>(null)
+    val error: LiveData<String?> = _error
+
+    private val _loading = MutableLiveData(false)
+    val loading: LiveData<Boolean> = _loading
+
+    // ── Convenience accessor used by fragments still referencing fullName / id ─
+    val customerName: String get() = _userMe.value?.fullName ?: ""
+    val customerId: Int get() = _userMe.value?.id ?: 0
+
+    fun loadMe() {
+        viewModelScope.launch {
+            _loading.value = true
+            when (val result = repo.getMe()) {
+                is ApiResult.Success -> _userMe.value = result.data
+                is ApiResult.Error -> _error.value = result.message
+            }
+            _loading.value = false
+        }
     }
 
-    fun updateCustomer(customer: Customer) {
-        _customer.value = customer
+    fun setUserMe(user: UserMe) {
+        _userMe.value = user
+    }
+
+    fun updateProfile(fullName: String? = null, phone: String? = null, onSuccess: (() -> Unit)? = null) {
+        viewModelScope.launch {
+            _loading.value = true
+            when (val result = repo.updateMe(UserUpdateRequest(fullName = fullName, phone = phone))) {
+                is ApiResult.Success -> {
+                    _userMe.value = result.data
+                    // persist name in session so it survives app restart
+                    val ctx = getApplication<Application>()
+                    UserSessionManager.getSession(ctx)?.let { session ->
+                        UserSessionManager.saveSession(ctx, session.copy(fullName = result.data.fullName))
+                    }
+                    onSuccess?.invoke()
+                }
+                is ApiResult.Error -> _error.value = result.message
+            }
+            _loading.value = false
+        }
     }
 
     fun clearCustomer() {
-        _customer.value = null
+        _userMe.value = null
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }

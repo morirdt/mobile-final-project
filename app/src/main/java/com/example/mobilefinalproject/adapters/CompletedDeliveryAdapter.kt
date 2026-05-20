@@ -4,50 +4,59 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.ItemDriverCompletedDeliveryBinding
-import com.example.mobilefinalproject.models.Delivery
 import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
+import com.example.mobilefinalproject.network.dto.OrderRead
 import java.text.SimpleDateFormat
 import java.util.Locale
 
 class CompletedDeliveryAdapter(
-    var deliveries: List<Delivery>?
+    var orders: List<OrderRead> = emptyList()
 ) : RecyclerView.Adapter<CompletedDeliveryAdapter.CompletedDeliveryViewHolder>() {
 
-    override fun getItemCount(): Int = deliveries?.size ?: 0
+    fun submitList(newOrders: List<OrderRead>) {
+        orders = newOrders
+        notifyDataSetChanged()
+    }
+
+    override fun getItemCount(): Int = orders.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CompletedDeliveryViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemDriverCompletedDeliveryBinding.inflate(inflater, parent, false)
-        return CompletedDeliveryViewHolder(binding = binding)
+        val binding = ItemDriverCompletedDeliveryBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return CompletedDeliveryViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: CompletedDeliveryViewHolder, position: Int) {
-        deliveries?.let {
-            holder.bind(it[position])
-        }
+        holder.bind(orders[position])
     }
 
     class CompletedDeliveryViewHolder(private val binding: ItemDriverCompletedDeliveryBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: Delivery) {
-            binding.completedDeliveryCustomerNameTextView.text = item.customerName
-            binding.completedDeliveryPriceTextView.text = String.format(Locale.getDefault(), "$%.2f", item.price)
-            binding.completedDeliveryTimeTextView.text =
-                SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()).format(item.date)
-            binding.completedDeliveryPickupAddressTextView.text = item.pickupLocation.address
-            binding.completedDeliveryDestinationAddressTextView.text = item.destinationLocation.address
 
-            // Set card stroke color based on status
+        fun bind(order: OrderRead) {
+            binding.completedDeliveryCustomerNameTextView.text = "Customer #${order.customerId}"
+            binding.completedDeliveryPriceTextView.text =
+                String.format(Locale.getDefault(), "$%.2f", order.priceCents / 100.0)
+
+            val timeDisplay = try {
+                val isoFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val displayFmt = SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault())
+                val parsed = isoFmt.parse(order.createdAt.take(19))
+                if (parsed != null) displayFmt.format(parsed) else order.createdAt
+            } catch (_: Exception) { order.createdAt }
+            binding.completedDeliveryTimeTextView.text = timeDisplay
+
+            binding.completedDeliveryPickupAddressTextView.text = order.pickupAddress
+            binding.completedDeliveryDestinationAddressTextView.text = order.dropoffAddress
+
             binding.completedDeliveryCardView.strokeColor =
-                activeDeliveryConfigs[item.status]?.strokeColor?.toColorInt()
-                    ?: "#FFC107".toColorInt()
+                activeDeliveryConfigs[order.status]?.strokeColor?.toColorInt() ?: "#388E3C".toColorInt()
             binding.completedDeliveryCardView.strokeWidth = 2.dpToPx()
         }
 
-        private fun Int.dpToPx(): Int {
-            return (this * itemView.context.resources.displayMetrics.density).toInt()
-        }
+        private fun Int.dpToPx(): Int =
+            (this * itemView.context.resources.displayMetrics.density).toInt()
     }
 }

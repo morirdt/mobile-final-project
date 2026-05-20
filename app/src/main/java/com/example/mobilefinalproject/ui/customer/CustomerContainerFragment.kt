@@ -5,21 +5,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mobilefinalproject.databinding.FragmentCustomerContainerBinding
-import com.example.mobilefinalproject.models.Customer
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
-import com.example.mobilefinalproject.viewmodels.CustomerViewModel
-import com.example.mobilefinalproject.viewmodels.DeliveryViewModel
 import com.example.mobilefinalproject.R
 
 class CustomerContainerFragment : Fragment() {
 
     private var binding: FragmentCustomerContainerBinding? = null
-    private lateinit var customerViewModel: CustomerViewModel
-    private lateinit var deliveryViewModel: DeliveryViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,17 +25,6 @@ class CustomerContainerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Initialize ViewModel at activity scope
-        customerViewModel = ViewModelProvider(requireActivity())[CustomerViewModel::class.java]
-        deliveryViewModel = ViewModelProvider(requireActivity())[DeliveryViewModel::class.java]
-
-        val customer = customerViewModel.customer.value ?: Customer("123456789", "John Customer")
-
-        if (customerViewModel.customer.value == null) {
-            customerViewModel.setCustomer(customer)
-        }
-        deliveryViewModel.setCustomerDeliveries(MockDeliveryDataSource.getDeliveriesByCustomer(customer.id))
 
         // Get NavController from nested NavHostFragment
         val navHostFragment = binding?.let {

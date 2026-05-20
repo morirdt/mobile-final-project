@@ -18,10 +18,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditOrderBinding
-import com.example.mobilefinalproject.models.Delivery
-import com.example.mobilefinalproject.models.Location
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
-import com.example.mobilefinalproject.viewmodels.DeliveryViewModel
+import com.example.mobilefinalproject.network.dto.OrderUpdateRequest
+import com.example.mobilefinalproject.viewmodels.OrderViewModel
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -30,19 +28,21 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 class CustomerEditOrderFragment : Fragment() {
     private val calendar = Calendar.getInstance()
-    private val deliveryViewModel: DeliveryViewModel by activityViewModels()
+    private val orderViewModel: OrderViewModel by activityViewModels()
     private val args: CustomerEditOrderFragmentArgs by navArgs()
     private var binding: FragmentCustomerEditOrderBinding? = null
-    private var pickupLocation: Location? = null
-    private var destinationLocation: Location? = null
+    private var pickupAddress: String = ""
+    private var pickupLat: Double = 0.0
+    private var pickupLng: Double = 0.0
+    private var dropoffAddress: String = ""
+    private var dropoffLat: Double = 0.0
+    private var dropoffLng: Double = 0.0
     private var selectedImageUri: Uri? = null
     private var isPlacesAutocompleteEnabled: Boolean = false
-    private lateinit var delivery: Delivery
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -67,41 +67,48 @@ class CustomerEditOrderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Get delivery from SafeArgs
-        delivery = args.delivery
+        val orderId = args.orderId
 
-        prefillFields()
+        // Observe selectedOrder (set by MyOrders when navigating here)
+        orderViewModel.selectedOrder.observe(viewLifecycleOwner) { order ->
+            if (order != null && order.id == orderId) {
+                prefillFields(
+                    pickup = order.pickupAddress,
+                    pLat = order.pickupLat,
+                    pLng = order.pickupLng,
+                    dropoff = order.dropoffAddress,
+                    dLat = order.dropoffLat,
+                    dLng = order.dropoffLng,
+                    description = order.cargoDescription ?: "",
+                    priceCents = order.priceCents,
+                    cargoImageUrl = order.cargoImageUrl
+                )
+            }
+        }
+
         setupUi()
-        setupButtonListeners()
+        setupButtonListeners(orderId)
         setupLocationPickers()
         setupImagePicker()
         setupDateTimePickers()
     }
 
-    private fun prefillFields() {
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    private fun prefillFields(
+        pickup: String, pLat: Double, pLng: Double,
+        dropoff: String, dLat: Double, dLng: Double,
+        description: String, priceCents: Int,
+        cargoImageUrl: String?
+    ) {
+        pickupAddress = pickup; pickupLat = pLat; pickupLng = pLng
+        dropoffAddress = dropoff; dropoffLat = dLat; dropoffLng = dLng
 
-        // Pre-fill location fields
-        binding?.customerEditOrderPickupAddressEditText?.setText(delivery.pickupLocation.address)
-        binding?.customerEditOrderDestinationAddressEditText?.setText(delivery.destinationLocation.address)
-        pickupLocation = delivery.pickupLocation
-        destinationLocation = delivery.destinationLocation
+        binding?.customerEditOrderPickupAddressEditText?.setText(pickup)
+        binding?.customerEditOrderDestinationAddressEditText?.setText(dropoff)
+        binding?.customerEditOrderDescriptionEditText?.setText(description)
+        binding?.customerEditOrderBudgetEditText?.setText((priceCents / 100.0).toString())
 
-        // Pre-fill date and time
-        binding?.customerEditOrderPickupDateEditText?.setText(dateFormat.format(delivery.date))
-        binding?.customerEditOrderPickupTimeEditText?.setText(timeFormat.format(delivery.date))
-
-        // Pre-fill package details
-        binding?.customerEditOrderDescriptionEditText?.setText(delivery.description)
-        binding?.customerEditOrderBudgetEditText?.setText(delivery.price.toString())
-
-        // Pre-fill image if available
-        if (delivery.imageUri != null) {
-            selectedImageUri = delivery.imageUri
-            Picasso.get()
-                .load(selectedImageUri)
-                .into(binding?.customerEditOrderImagePreview)
+        if (!cargoImageUrl.isNullOrBlank()) {
+            Picasso.get().load(cargoImageUrl).into(binding?.customerEditOrderImagePreview)
             binding?.customerEditOrderImagePreview?.visibility = View.VISIBLE
         }
     }
@@ -136,10 +143,10 @@ class CustomerEditOrderFragment : Fragment() {
         }
     }
 
-    private fun setupButtonListeners() {
+    private fun setupButtonListeners(orderId: Int) {
         binding?.customerEditOrderSubmitButton?.setOnClickListener {
             if (validateForm()) {
-                submitOrder()
+                submitOrder(orderId)
             }
         }
 
@@ -166,9 +173,7 @@ class CustomerEditOrderFragment : Fragment() {
         uri?.let {
             selectedImageUri = it
             binding?.customerEditOrderImagePreview?.let { imageView ->
-                Picasso.get()
-                    .load(selectedImageUri)
-                    .into(imageView)
+                Picasso.get().load(selectedImageUri).into(imageView)
             }
             binding?.customerEditOrderImagePreview?.visibility = View.VISIBLE
             Log.d("EditOrder", "Image selected: $it")
@@ -214,38 +219,25 @@ class CustomerEditOrderFragment : Fragment() {
     private fun setupLocationPickers() {
         binding?.customerEditOrderPickupAddressEditText?.setOnClickListener {
             if (isPlacesAutocompleteEnabled) {
-                val fields = listOf(
-                    Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS,
-                    Place.Field.LAT_LNG
-                )
-                val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
-                    .build(requireContext())
+                val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG)
+                val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(requireContext())
                 pickupAddressLauncher.launch(intent)
             }
         }
 
         binding?.customerEditOrderDestinationAddressEditText?.setOnClickListener {
             if (isPlacesAutocompleteEnabled) {
-                val fields = listOf(
-                    Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS,
-                    Place.Field.LAT_LNG
-                )
-                val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields)
-                    .build(requireContext())
+                val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG)
+                val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.FULLSCREEN, fields).build(requireContext())
                 destinationAddressLauncher.launch(intent)
             }
         }
     }
 
     private fun setupDateTimePickers() {
-        binding?.customerEditOrderPickupDateEditText?.setOnClickListener {
-            showDatePicker()
-        }
-
-        binding?.customerEditOrderPickupTimeEditText?.setOnClickListener {
-            showTimePicker { time ->
-                binding?.customerEditOrderPickupTimeEditText?.setText(time)
-            }
+        binding?.customerEditOrderPickupDateEditText?.setOnClickListener { showDatePicker() }
+        binding?.customerEditOrderPickupTimeEditText?.setOnClickListener { time ->
+            showTimePicker { binding?.customerEditOrderPickupTimeEditText?.setText(it) }
         }
     }
 
@@ -261,24 +253,15 @@ class CustomerEditOrderFragment : Fragment() {
         } else {
             android.Manifest.permission.READ_EXTERNAL_STORAGE
         }
-
         when {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                permission
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                imagePickerLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            }
-            else -> {
-                permissionLauncher.launch(permission)
-            }
+            ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED ->
+                imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            else -> permissionLauncher.launch(permission)
         }
     }
 
     private fun showDatePicker() {
-        val datePickerDialog = DatePickerDialog(
+        DatePickerDialog(
             requireContext(),
             { _, year, month, dayOfMonth ->
                 val selectedDate = Calendar.getInstance()
@@ -289,22 +272,19 @@ class CustomerEditOrderFragment : Fragment() {
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        datePickerDialog.show()
+        ).show()
     }
 
     private fun showTimePicker(callback: (String) -> Unit) {
-        val timePickerDialog = TimePickerDialog(
+        TimePickerDialog(
             requireContext(),
             { _, hourOfDay, minute ->
-                val time = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
-                callback(time)
+                callback(String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute))
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
             true
-        )
-        timePickerDialog.show()
+        ).show()
     }
 
     private fun validateForm(): Boolean {
@@ -313,48 +293,18 @@ class CustomerEditOrderFragment : Fragment() {
         val pickupText = binding?.customerEditOrderPickupAddressEditText?.text?.toString()?.trim().orEmpty()
         val destinationText = binding?.customerEditOrderDestinationAddressEditText?.text?.toString()?.trim().orEmpty()
 
-        if (pickupLocation == null && pickupText.isBlank()) {
+        if (pickupAddress.isBlank() && pickupText.isBlank()) {
             binding?.customerEditOrderPickupAddressLayout?.error = "Pickup address is required"
             isValid = false
         } else {
             binding?.customerEditOrderPickupAddressLayout?.error = null
         }
 
-        if (destinationLocation == null && destinationText.isBlank()) {
+        if (dropoffAddress.isBlank() && destinationText.isBlank()) {
             binding?.customerEditOrderDestinationAddressLayout?.error = "Destination address is required"
             isValid = false
         } else {
             binding?.customerEditOrderDestinationAddressLayout?.error = null
-        }
-
-        val dateText = binding?.customerEditOrderPickupDateEditText?.text?.toString()?.trim()
-        val dateLayout = binding?.root?.findViewById<com.google.android.material.textfield.TextInputLayout>(
-            com.example.mobilefinalproject.R.id.customer_edit_order_pickup_date_layout
-        )
-        if (dateText.isNullOrEmpty()) {
-            dateLayout?.error = "Delivery date is required"
-            isValid = false
-        } else {
-            dateLayout?.error = null
-        }
-
-        val timeText = binding?.customerEditOrderPickupTimeEditText?.text?.toString()?.trim()
-        if (timeText.isNullOrEmpty()) {
-            binding?.customerEditOrderPickupTimeLayout?.error = "Pickup time is required"
-            isValid = false
-        } else {
-            binding?.customerEditOrderPickupTimeLayout?.error = null
-        }
-
-        val descriptionText = binding?.customerEditOrderDescriptionEditText?.text?.toString()?.trim()
-        val descriptionLayout = binding?.root?.findViewById<com.google.android.material.textfield.TextInputLayout>(
-            com.example.mobilefinalproject.R.id.customer_edit_order_description_layout
-        )
-        if (descriptionText.isNullOrEmpty()) {
-            descriptionLayout?.error = "Package description is required"
-            isValid = false
-        } else {
-            descriptionLayout?.error = null
         }
 
         val budgetText = binding?.customerEditOrderBudgetEditText?.text?.toString()?.trim()
@@ -377,57 +327,44 @@ class CustomerEditOrderFragment : Fragment() {
         return isValid
     }
 
-    private fun submitOrder() {
-        val pickup = pickupLocation ?: Location(
-            address = binding?.customerEditOrderPickupAddressEditText?.text?.toString()?.trim().orEmpty(),
-            latitude = 0.0,
-            longitude = 0.0,
-        )
-        val destination = destinationLocation ?: Location(
-            address = binding?.customerEditOrderDestinationAddressEditText?.text?.toString()?.trim().orEmpty(),
-            latitude = 0.0,
-            longitude = 0.0,
-        )
+    private fun submitOrder(orderId: Int) {
+        val finalPickupAddress = binding?.customerEditOrderPickupAddressEditText?.text?.toString()?.trim()
+            ?.takeIf { it.isNotBlank() } ?: pickupAddress
+        val finalDropoffAddress = binding?.customerEditOrderDestinationAddressEditText?.text?.toString()?.trim()
+            ?.takeIf { it.isNotBlank() } ?: dropoffAddress
 
-        if (pickup.address.isBlank() || destination.address.isBlank()) {
-            return
-        }
+        if (finalPickupAddress.isBlank() || finalDropoffAddress.isBlank()) return
 
-        val budget = binding?.customerEditOrderBudgetEditText?.text?.toString()?.trim()?.toDoubleOrNull() ?: return
-        val description = binding?.customerEditOrderDescriptionEditText?.text?.toString()?.trim().orEmpty()
-        val dateText = binding?.customerEditOrderPickupDateEditText?.text?.toString()?.trim().orEmpty()
-        val timeText = binding?.customerEditOrderPickupTimeEditText?.text?.toString()?.trim().orEmpty()
-        val dateTimeString = "$dateText $timeText"
-        val deliveryDate = try {
-            SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).parse(dateTimeString) ?: Date()
-        } catch (_: Exception) {
-            Date()
-        }
+        val budgetDollars = binding?.customerEditOrderBudgetEditText?.text?.toString()?.trim()?.toDoubleOrNull() ?: return
+        val priceCents = (budgetDollars * 100).toInt()
+        val description = binding?.customerEditOrderDescriptionEditText?.text?.toString()?.trim()
 
-        val updatedDelivery = delivery.copy(
-            price = budget,
-            date = deliveryDate,
-            pickupLocation = pickup,
-            destinationLocation = destination,
-            description = description,
-            imageUriString = selectedImageUri?.toString() ?: delivery.imageUriString
+        orderViewModel.updateOrder(
+            orderId,
+            OrderUpdateRequest(
+                pickupAddress = finalPickupAddress,
+                pickupLat = pickupLat.takeIf { it != 0.0 },
+                pickupLng = pickupLng.takeIf { it != 0.0 },
+                dropoffAddress = finalDropoffAddress,
+                dropoffLat = dropoffLat.takeIf { it != 0.0 },
+                dropoffLng = dropoffLng.takeIf { it != 0.0 },
+                cargoDescription = description,
+                priceCents = priceCents
+            ),
+            onSuccess = {
+                findNavController().popBackStack()
+            }
         )
-
-        MockDeliveryDataSource.updateDelivery(updatedDelivery)
-        deliveryViewModel.setCustomerDeliveries(
-            MockDeliveryDataSource.getDeliveriesByCustomer(delivery.customerId)
-        )
-        findNavController().popBackStack()
     }
 
     private fun updatePickupLocation(address: String, latitude: Double, longitude: Double) {
-        pickupLocation = Location(address = address, latitude = latitude, longitude = longitude)
+        pickupAddress = address; pickupLat = latitude; pickupLng = longitude
         binding?.customerEditOrderPickupAddressEditText?.setText(address)
         binding?.customerEditOrderPickupAddressLayout?.error = null
     }
 
     private fun updateDestinationLocation(address: String, latitude: Double, longitude: Double) {
-        destinationLocation = Location(address = address, latitude = latitude, longitude = longitude)
+        dropoffAddress = address; dropoffLat = latitude; dropoffLng = longitude
         binding?.customerEditOrderDestinationAddressEditText?.setText(address)
         binding?.customerEditOrderDestinationAddressLayout?.error = null
     }
@@ -437,9 +374,3 @@ class CustomerEditOrderFragment : Fragment() {
         binding = null
     }
 }
-
-
-
-
-
-

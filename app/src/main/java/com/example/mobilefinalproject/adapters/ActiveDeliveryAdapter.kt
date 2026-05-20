@@ -9,67 +9,78 @@ import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.ItemDriverActiveDeliveryBinding
-import com.example.mobilefinalproject.models.Delivery
-import com.example.mobilefinalproject.models.DeliveryStatus
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
-import com.example.mobilefinalproject.models.driver.ButtonConfig
 import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
-import com.example.mobilefinalproject.ui.dialogs.DeliveryDetailsDialog
+import com.example.mobilefinalproject.network.dto.OrderRead
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class ActiveDeliveryAdapter(var deliveries: List<Delivery>?) :
-    RecyclerView.Adapter<ActiveDeliveryAdapter.ActiveDeliveryViewHolder>() {
-    fun refreshFromSource() {
-        deliveries = MockDeliveryDataSource.getActiveDeliveries()
+class ActiveDeliveryAdapter(
+    var orders: List<OrderRead> = emptyList(),
+    private val onStart: ((OrderRead) -> Unit)? = null,
+    private val onComplete: ((OrderRead) -> Unit)? = null,
+    private val onDetails: ((OrderRead) -> Unit)? = null,
+    private val onCancel: ((OrderRead) -> Unit)? = null
+) : RecyclerView.Adapter<ActiveDeliveryAdapter.ActiveDeliveryViewHolder>() {
+
+    fun submitList(newOrders: List<OrderRead>) {
+        orders = newOrders
         notifyDataSetChanged()
     }
 
-    override fun getItemCount(): Int = deliveries?.size ?: 0
+    override fun getItemCount(): Int = orders.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActiveDeliveryViewHolder {
-        val inflater = LayoutInflater.from(parent.context)
-        val binding = ItemDriverActiveDeliveryBinding.inflate(inflater, parent, false)
-        return ActiveDeliveryViewHolder(binding = binding)
+        val binding = ItemDriverActiveDeliveryBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return ActiveDeliveryViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ActiveDeliveryViewHolder, position: Int) {
-        deliveries?.let {
-            holder.bind(it[position])
-        }
+        holder.bind(orders[position])
     }
 
-    class ActiveDeliveryViewHolder(private val binding: ItemDriverActiveDeliveryBinding) :
+    inner class ActiveDeliveryViewHolder(private val binding: ItemDriverActiveDeliveryBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(delivery: Delivery) {
-            binding.activeDeliveryCustomerNameTextView.text = delivery.customerName
-            binding.activeDeliveryStatusTextView.text = delivery.status
-            binding.activeDeliveryPriceTextView.text = String.format(Locale.getDefault(), "$%.2f", delivery.price)
-            binding.activeDeliveryMaterialCardView.strokeColor =
-                activeDeliveryConfigs[delivery.status]?.strokeColor?.toColorInt()
-                    ?: "#FFC107".toColorInt()
 
+        fun bind(order: OrderRead) {
+            val status = order.status
+            binding.activeDeliveryStatusTextView.text = status
+            binding.activeDeliveryPriceTextView.text =
+                String.format(Locale.getDefault(), "$%.2f", order.priceCents / 100.0)
+
+            // Customer name not directly available in OrderRead; show customer ID as fallback
+            binding.activeDeliveryCustomerNameTextView.text = "Customer #${order.customerId}"
+
+            binding.activeDeliveryMaterialCardView.strokeColor =
+                activeDeliveryConfigs[status]?.strokeColor?.toColorInt() ?: "#FFC107".toColorInt()
             binding.activeDeliveryMaterialCardView.strokeWidth = 2.dpToPx()
 
             binding.activeDeliveryStatusBadgeLinearLayout.setBackgroundResource(
-                activeDeliveryConfigs[delivery.status]?.badgeDrawable ?: R.drawable.badge_pending
+                activeDeliveryConfigs[status]?.badgeDrawable ?: R.drawable.badge_pending
             )
 
-            val pickupTime = SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()).format(delivery.date)
-            binding.activeDeliveryTimeTextView.text = pickupTime
-            binding.activeDeliveryPickupAddressTextView.text = delivery.pickupLocation.address
-            binding.activeDeliveryDestinationAddressTextView.text = delivery.destinationLocation.address
+            // Use createdAt as the display timestamp
+            val timeDisplay = try {
+                val isoFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val displayFmt = SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault())
+                val parsed = isoFmt.parse(order.createdAt.take(19))
+                if (parsed != null) displayFmt.format(parsed) else order.createdAt
+            } catch (_: Exception) { order.createdAt }
+            binding.activeDeliveryTimeTextView.text = timeDisplay
 
-            setupActionButtons(delivery)
+            binding.activeDeliveryPickupAddressTextView.text = order.pickupAddress
+            binding.activeDeliveryDestinationAddressTextView.text = order.dropoffAddress
+
+            setupActionButtons(order)
         }
 
-        private fun setupActionButtons(delivery: Delivery) {
+        private fun setupActionButtons(order: OrderRead) {
             binding.activeDeliveryButtonsContainerLinearLayout.removeAllViews()
-            val buttons: List<ButtonConfig> =
-                activeDeliveryConfigs[delivery.status]?.buttons ?: emptyList()
+            val buttons = activeDeliveryConfigs[order.status]?.buttons ?: emptyList()
             buttons.forEach { buttonConfig ->
                 addButton(
-                    delivery = delivery,
+                    order = order,
                     text = buttonConfig.text,
                     backgroundRes = buttonConfig.backgroundRes,
                     textColor = buttonConfig.textColor,
@@ -78,62 +89,45 @@ class ActiveDeliveryAdapter(var deliveries: List<Delivery>?) :
             }
         }
 
-        private fun addButton(
-            delivery: Delivery,
-            text: String,
-            backgroundRes: Int,
-            textColor: Int,
-            weight: Float
-        ) {
+        private fun addButton(order: OrderRead, text: String, backgroundRes: Int, textColor: Int, weight: Float) {
             val button = LinearLayout(itemView.context).apply {
-                layoutParams =
-                    LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT).apply {
-                        this.weight = weight
-                        marginEnd = 4.dpToPx()
-                        marginStart = 4.dpToPx()
-                    }
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT).apply {
+                    this.weight = weight
+                    marginEnd = 4.dpToPx()
+                    marginStart = 4.dpToPx()
+                }
                 setBackgroundResource(backgroundRes)
                 gravity = android.view.Gravity.CENTER
                 isClickable = true
                 isFocusable = true
                 setOnClickListener {
                     when {
-                        text.equals("Start", ignoreCase = true) && delivery.status == DeliveryStatus.ACCEPTED.label -> {
-                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.IN_PROGRESS.label)
+                        text.equals("Start", ignoreCase = true) -> {
+                            onStart?.invoke(order)
                             Toast.makeText(context, "Order started", Toast.LENGTH_SHORT).show()
-                            (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
                         }
-                        text.equals("Complete", ignoreCase = true) && delivery.status == DeliveryStatus.IN_PROGRESS.label -> {
-                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.COMPLETED.label)
+                        text.equals("Complete", ignoreCase = true) -> {
+                            onComplete?.invoke(order)
                             Toast.makeText(context, "Order completed", Toast.LENGTH_SHORT).show()
-                            (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
                         }
-                        text.equals("Details", ignoreCase = true) -> {
-                            DeliveryDetailsDialog(context).show(delivery, onStatusChanged = {
-                                (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
-                            })
-                        }
+                        text.equals("Details", ignoreCase = true) -> onDetails?.invoke(order)
                         text.equals("Cancel", ignoreCase = true) -> {
-                            MockDeliveryDataSource.updateDeliveryStatus(delivery.id, DeliveryStatus.PENDING.label)
-                            Toast.makeText(context, "Delivery cancelled", Toast.LENGTH_SHORT).show()
-                            (bindingAdapter as? ActiveDeliveryAdapter)?.refreshFromSource()
+                            onCancel?.invoke(order)
+                            Toast.makeText(context, "Order cancelled", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
             }
-
             val textView = TextView(itemView.context).apply {
                 this.text = text
                 setTextColor(textColor)
                 textSize = 12f
             }
-
             button.addView(textView)
             binding.activeDeliveryButtonsContainerLinearLayout.addView(button)
         }
 
-        private fun Int.dpToPx(): Int {
-            return (this * itemView.context.resources.displayMetrics.density).toInt()
-        }
+        private fun Int.dpToPx(): Int =
+            (this * itemView.context.resources.displayMetrics.density).toInt()
     }
 }

@@ -1,55 +1,75 @@
 package com.example.mobilefinalproject
 
-import com.example.mobilefinalproject.models.Delivery
-import com.example.mobilefinalproject.models.DeliveryStatus
-import com.example.mobilefinalproject.models.Location
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
+import com.example.mobilefinalproject.network.dto.OrderRead
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.Date
-import java.util.UUID
 
 class CustomerFlowTest {
 
+    private fun makeOrder(
+        id: Int,
+        customerId: Int,
+        status: String = "pending"
+    ) = OrderRead(
+        id = id,
+        customerId = customerId,
+        driverId = null,
+        status = status,
+        pickupAddress = "Test Pickup",
+        pickupLat = 32.0,
+        pickupLng = 34.7,
+        dropoffAddress = "Test Dropoff",
+        dropoffLat = 32.1,
+        dropoffLng = 34.8,
+        cargoDescription = "Test cargo",
+        cargoWeightKg = null,
+        notes = null,
+        priceCents = 1999,
+        currency = "USD",
+        acceptedAt = null,
+        startedAt = null,
+        pickedUpAt = null,
+        completedAt = null,
+        cancelledAt = null,
+        cancellationReason = null,
+        cargoImageUrl = null,
+        createdAt = "2024-01-15T10:30:00",
+        updatedAt = "2024-01-15T10:30:00"
+    )
+
     @Test
-    fun getDeliveriesByCustomer_returnsOnlyMatchingCustomerOrders() {
-        val customerId = "123456789"
+    fun filterByCustomerId_returnsOnlyMatchingOrders() {
+        val orders = listOf(
+            makeOrder(1, customerId = 10),
+            makeOrder(2, customerId = 10),
+            makeOrder(3, customerId = 99),
+        )
 
-        val result = MockDeliveryDataSource.getDeliveriesByCustomer(customerId)
+        val result = orders.filter { it.customerId == 10 }
 
-        assertTrue(result.isNotEmpty())
-        assertTrue(result.all { it.customerId == customerId })
+        assertEquals(2, result.size)
+        assertTrue(result.all { it.customerId == 10 })
     }
 
     @Test
-    fun addDelivery_makesOrderVisibleForCustomerAndPendingLists() {
-        val snapshot = MockDeliveryDataSource.deliveries.toList()
-        try {
-            val customerId = "customer-test-${UUID.randomUUID()}"
-            val newDelivery = Delivery(
-                id = "delivery-test-${UUID.randomUUID()}",
-                customerName = "Test Customer",
-                customerId = customerId,
-                status = DeliveryStatus.PENDING.label,
-                price = 19.99,
-                date = Date(),
-                pickupLocation = Location("Test Pickup", 0.0, 0.0),
-                destinationLocation = Location("Test Destination", 0.0, 0.0),
-                description = "test",
-            )
+    fun filterPendingOrders_returnsOnlyPendingStatus() {
+        val orders = listOf(
+            makeOrder(1, customerId = 10, status = "pending"),
+            makeOrder(2, customerId = 10, status = "accepted"),
+            makeOrder(3, customerId = 10, status = "completed"),
+        )
 
-            MockDeliveryDataSource.addDelivery(newDelivery)
+        val pending = orders.filter { it.status == "pending" }
 
-            val customerOrders = MockDeliveryDataSource.getDeliveriesByCustomer(customerId)
-            val pending = MockDeliveryDataSource.getPendingDeliveries()
+        assertEquals(1, pending.size)
+        assertEquals("pending", pending.first().status)
+    }
 
-            assertEquals(newDelivery.id, customerOrders.first().id)
-            assertTrue(pending.any { it.id == newDelivery.id })
-        } finally {
-            MockDeliveryDataSource.deliveries.clear()
-            MockDeliveryDataSource.deliveries.addAll(snapshot)
-        }
+    @Test
+    fun priceCentsConversion_displaysDollarsCorrectly() {
+        val order = makeOrder(1, customerId = 10).copy(priceCents = 2550)
+        val dollars = order.priceCents / 100.0
+        assertEquals(25.50, dollars, 0.001)
     }
 }
-

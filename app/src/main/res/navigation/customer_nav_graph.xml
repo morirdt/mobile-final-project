@@ -66,8 +66,8 @@
         android:label="Edit Order"
         tools:layout="@layout/fragment_customer_edit_order">
         <argument
-            android:name="delivery"
-            app:argType="com.example.mobilefinalproject.models.Delivery" />
+            android:name="orderId"
+            app:argType="integer" />
         <action
             android:id="@+id/action_customerEditOrderFragment_to_customerMyOrdersFragment"
             app:destination="@id/customerMyOrdersFragment"
