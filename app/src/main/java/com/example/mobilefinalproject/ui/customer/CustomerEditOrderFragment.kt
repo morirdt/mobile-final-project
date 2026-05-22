@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -83,6 +84,21 @@ class CustomerEditOrderFragment : Fragment() {
                     priceCents = order.priceCents,
                     cargoImageUrl = order.cargoImageUrl
                 )
+            }
+        }
+
+        // Show loading state on submit button
+        orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            binding?.customerEditOrderSubmitButton?.isEnabled = !loading
+            binding?.customerEditOrderSubmitButton?.text =
+                if (loading) "Updating…" else "Update Order"
+        }
+
+        // Show errors as toast
+        orderViewModel.error.observe(viewLifecycleOwner) { message ->
+            if (!message.isNullOrBlank()) {
+                Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
             }
         }
 
@@ -352,6 +368,7 @@ class CustomerEditOrderFragment : Fragment() {
                 priceCents = priceCents
             ),
             onSuccess = {
+                Toast.makeText(requireContext(), "Order updated successfully", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }
         )

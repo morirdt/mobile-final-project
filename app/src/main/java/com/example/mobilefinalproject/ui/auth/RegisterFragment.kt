@@ -134,10 +134,10 @@ class RegisterFragment : Fragment() {
                                         setLoading(false)
                                         if (userType == UserSessionManager.UserType.DRIVER) {
                                             driverViewModel.setUserMe(me)
-                                            findNavController().navigate(R.id.action_loginFragment_to_driverContainerFragment)
+                                            findNavController().navigate(R.id.action_registerFragment_to_driverContainerFragment)
                                         } else {
                                             customerViewModel.setUserMe(me)
-                                            findNavController().navigate(R.id.action_loginFragment_to_customerContainerFragment)
+                                            findNavController().navigate(R.id.action_registerFragment_to_customerContainerFragment)
                                         }
                                     }
                                 }

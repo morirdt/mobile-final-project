@@ -16,6 +16,9 @@ import retrofit2.http.Query
 
 interface DriverApi {
 
+    @GET("api/v1/drivers/me")
+    suspend fun getMe(): Response<DriverProfile>
+
     @PUT("api/v1/drivers/me/profile")
     suspend fun updateProfile(@Body body: DriverProfileUpdateRequest): Response<DriverProfile>
 

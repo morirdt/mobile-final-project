@@ -129,7 +129,6 @@ class DeliveryDetailsDialog(private val context: Context) {
                 when {
                     text.equals("Accept", ignoreCase = true) -> {
                         onAccept?.invoke()
-                        Toast.makeText(context, "Order accepted!", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                     }
                     text.equals("Start", ignoreCase = true) -> {

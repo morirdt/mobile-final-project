@@ -53,6 +53,7 @@ class CustomerMyOrdersFragment : Fragment() {
                 orderViewModel.cancelOrder(order.id)
             },
             onEdit = { order ->
+                orderViewModel.selectOrder(order)
                 val action = CustomerMyOrdersFragmentDirections
                     .actionCustomerMyOrdersFragmentToCustomerEditOrderFragment(order.id)
                 findNavController().navigate(action)

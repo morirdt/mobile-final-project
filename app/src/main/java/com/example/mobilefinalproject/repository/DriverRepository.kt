@@ -14,6 +14,10 @@ class DriverRepository(context: Context) {
 
     private val api: DriverApi = RetrofitClient.createService(context)
 
+    suspend fun getMe(): ApiResult<DriverProfile> = safeApiCall {
+        api.getMe()
+    }
+
     suspend fun updateProfile(
         vehicleType: String? = null,
         vehiclePlate: String? = null,

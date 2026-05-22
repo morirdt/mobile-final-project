@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
@@ -88,14 +89,21 @@ class DriverFinderFragment : Fragment() {
             view.findViewById<MaterialCardView>(R.id.location_denied_banner).visibility = View.GONE
         }
 
+        orderViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
+            }
+        }
+
         orderViewModel.selectedOrder.observe(viewLifecycleOwner) { order ->
             if (order != null) {
                 DeliveryDetailsDialog(requireContext()).show(
                     order = order,
                     onAccept = {
                         orderViewModel.acceptOrder(order.id) {
+                            Toast.makeText(requireContext(), "Order accepted! Check Active Deliveries.", Toast.LENGTH_SHORT).show()
                             orderViewModel.selectOrder(null)
-                            orderViewModel.loadPendingOrders()
                         }
                     },
                     onStart = null,

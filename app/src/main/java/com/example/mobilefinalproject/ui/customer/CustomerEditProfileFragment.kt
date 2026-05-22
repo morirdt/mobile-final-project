@@ -13,7 +13,6 @@ import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
-import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.squareup.picasso.Picasso
 
@@ -23,21 +22,17 @@ class CustomerEditProfileFragment : Fragment() {
     private var binding: FragmentCustomerEditProfileBinding? = null
     private var selectedImageUri: Uri? = null
 
-    // Image picker launcher
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let {
             selectedImageUri = it
             binding?.customerEditProfileImageView?.let { imageView ->
-                Picasso.get()
-                    .load(selectedImageUri)
-                    .into(imageView)
+                Picasso.get().load(selectedImageUri).into(imageView)
             }
         }
     }
 
-    // Permission request launcher
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -60,44 +55,24 @@ class CustomerEditProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observe customer data and populate fields
-        customerViewModel.customer.observe(viewLifecycleOwner) { customer ->
-            if (customer != null) {
-                binding?.customerEditProfileFullNameEditText?.setText(customer.fullName)
-                binding?.customerEditProfileIdEditText?.setText(customer.id)
+        customerViewModel.userMe.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                binding?.customerEditProfileFullNameEditText?.setText(user.fullName)
+                binding?.customerEditProfileIdEditText?.setText(user.id.toString())
             }
         }
 
-        // Setup button click listeners
-        binding?.customerEditProfileSaveButton?.setOnClickListener {
-            saveProfile()
-        }
-
-        binding?.customerEditProfileCancelButton?.setOnClickListener {
-            findNavController().navigateUp()
-        }
-
-        binding?.customerEditProfileChangePictureButton?.setOnClickListener {
-            checkAndRequestGalleryPermission()
-        }
+        binding?.customerEditProfileSaveButton?.setOnClickListener { saveProfile() }
+        binding?.customerEditProfileCancelButton?.setOnClickListener { findNavController().navigateUp() }
+        binding?.customerEditProfileChangePictureButton?.setOnClickListener { checkAndRequestGalleryPermission() }
     }
 
     private fun checkAndRequestGalleryPermission() {
-        val permission =
-            android.Manifest.permission.READ_MEDIA_IMAGES
-
+        val permission = android.Manifest.permission.READ_MEDIA_IMAGES
         when {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                permission
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                imagePickerLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            }
-            else -> {
-                permissionLauncher.launch(permission)
-            }
+            ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED ->
+                imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            else -> permissionLauncher.launch(permission)
         }
     }
 
@@ -110,14 +85,9 @@ class CustomerEditProfileFragment : Fragment() {
             return
         }
 
-        // Get current customer from ViewModel
-        val currentCustomer = customerViewModel.customer.value
-        if (currentCustomer != null) {
-            val updatedCustomer = currentCustomer.copy(fullName = updatedFullName)
-            customerViewModel.updateCustomer(updatedCustomer)
-            UserSessionManager.saveCustomer(requireContext(), updatedCustomer)
+        customerViewModel.updateProfile(fullName = updatedFullName, onSuccess = {
             findNavController().navigateUp()
-        }
+        })
     }
 
     override fun onDestroyView() {

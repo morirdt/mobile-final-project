@@ -33,7 +33,15 @@ class DriverActiveDeliveriesFragment : Fragment() {
             binding?.driverActiveDeliveriesRecyclerView?.adapter = ActiveDeliveryAdapter(
                 orders,
                 onStart = { order -> orderViewModel.startOrder(order.id) },
-                onComplete = { order -> orderViewModel.completeOrder(order.id) }
+                onComplete = { order -> orderViewModel.completeOrder(order.id) },
+                onDetails = { order ->
+                    com.example.mobilefinalproject.ui.dialogs.DeliveryDetailsDialog(requireContext()).show(
+                        order = order,
+                        showActions = false,
+                        showDriverInfo = false
+                    )
+                },
+                onCancel = { order -> orderViewModel.cancelOrder(order.id) }
             )
         }
     }

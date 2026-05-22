@@ -10,14 +10,11 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentDriverContainerBinding
-import com.example.mobilefinalproject.models.driver.Driver
-import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 
 class DriverContainerFragment : Fragment() {
 
     private var binding: FragmentDriverContainerBinding? = null
-
     private lateinit var driverViewModel: DriverViewModel
 
     override fun onCreateView(
@@ -35,16 +32,13 @@ class DriverContainerFragment : Fragment() {
         // Initialize ViewModel at activity scope
         driverViewModel = ViewModelProvider(requireActivity())[DriverViewModel::class.java]
 
-        val driver = driverViewModel.driver.value
-            ?: UserSessionManager.restoreDriver(requireContext())
-            ?: Driver("123456789", "John Driver")
+        // Load driver profile if not already loaded
+        if (driverViewModel.userMe.value == null) {
+            driverViewModel.loadMe()
+        }
 
-        if (driverViewModel.driver.value == null) {
-            driverViewModel.setDriver(driver)
-        }
-        if (!UserSessionManager.hasSession(requireContext())) {
-            UserSessionManager.saveDriver(requireContext(), driver)
-        }
+        // Mark driver as available (only if not currently busy with an order)
+        driverViewModel.setAvailableIfNotBusy()
 
         // Get NavController from nested NavHostFragment
         val navHostFragment = binding?.let {
@@ -67,5 +61,9 @@ class DriverContainerFragment : Fragment() {
             }
         }
     }
-}
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+}
