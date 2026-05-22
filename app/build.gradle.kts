@@ -52,7 +52,7 @@ android {
                 val regex = Regex("^BASE_URL=(.*)$", RegexOption.MULTILINE)
                 regex.find(text)?.groups?.get(1)?.value?.trim()
             } else null
-        } ?: System.getenv("BASE_URL") ?: "http://10.0.2.2:8000/"
+        } ?: System.getenv("BASE_URL") ?: "http://node59.cs.colman.ac.il/"
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
 
         // Also pass into AndroidManifest via manifest placeholders (for Google Maps API meta-data)

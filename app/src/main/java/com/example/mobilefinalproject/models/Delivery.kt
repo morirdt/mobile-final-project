@@ -1,0 +1,30 @@
+package com.example.mobilefinalproject.models
+
+import android.net.Uri
+import java.io.Serializable
+import java.util.Date
+
+data class Delivery(
+    val id: String,
+    val customerName: String,
+    val driverName: String,
+    val customerId: String,
+    val status: String,
+    val price: Double,
+    val date: Date,
+    val pickupLocation: Location,
+    val destinationLocation: Location,
+    val description: String = "",
+    val imageUriString: String? = null,
+    val phoneNumber: String = "",
+    val rating: Int = 0,
+) : Serializable {
+    // Compatibility accessors for code paths that still expect address/lat/lng fields.
+    val pickupAddress: String get() = pickupLocation.address
+    val dropoffAddress: String get() = destinationLocation.address
+    val pickupLat: Double get() = pickupLocation.latitude
+    val pickupLng: Double get() = pickupLocation.longitude
+    val dropoffLat: Double get() = destinationLocation.latitude
+    val dropoffLng: Double get() = destinationLocation.longitude
+    val imageUri: Uri? get() = imageUriString?.let(Uri::parse)
+}

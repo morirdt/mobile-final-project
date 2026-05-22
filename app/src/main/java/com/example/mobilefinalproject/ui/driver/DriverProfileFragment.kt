@@ -10,11 +10,13 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentDriverProfileBinding
+import com.example.mobilefinalproject.models.driver.Driver
 import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 
 class DriverProfileFragment : Fragment() {
     private val driverViewModel: DriverViewModel by activityViewModels()
+    private var driver: Driver? = null
     private var binding: FragmentDriverProfileBinding? = null
 
     override fun onCreateView(
@@ -29,23 +31,25 @@ class DriverProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        driverViewModel.userMe.observe(viewLifecycleOwner) { user ->
-            binding?.driverProfileNameTextView?.text = user?.fullName
-            binding?.driverProfileIdTextView?.text = user?.id?.toString()
+        driverViewModel.driver.observe(viewLifecycleOwner) { driver ->
+            this.driver = driver
+            updateUI()
         }
 
+        // Setup edit profile button click listener
         binding?.driverProfileEditButton?.setOnClickListener {
             findNavController().navigate(R.id.action_driverProfileFragment_to_driverEditProfileFragment)
         }
 
+        // Setup logout button click listener
         binding?.driverProfileLogoutButton?.setOnClickListener {
             logout()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        driverViewModel.loadMe()
+    private fun updateUI() {
+        binding?.driverProfileNameTextView?.text = this.driver?.fullName
+        binding?.driverProfileIdTextView?.text = this.driver?.id
     }
 
     private fun logout() {
@@ -53,10 +57,5 @@ class DriverProfileFragment : Fragment() {
         UserSessionManager.clearSession(requireContext())
         val parentNavController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
         parentNavController.navigate(R.id.action_global_loginFragment)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
     }
 }

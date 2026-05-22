@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.databinding.FragmentDriverEditProfileBinding
+import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 import com.squareup.picasso.Picasso
 
@@ -54,10 +55,10 @@ class DriverEditProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        driverViewModel.userMe.observe(viewLifecycleOwner) { user ->
-            if (user != null) {
-                binding?.driverEditProfileFullNameEditText?.setText(user.fullName)
-                binding?.driverEditProfileIdEditText?.setText(user.id.toString())
+        driverViewModel.driver.observe(viewLifecycleOwner) { driver ->
+            if (driver != null) {
+                binding?.driverEditProfileFullNameEditText?.setText(driver.fullName)
+                binding?.driverEditProfileIdEditText?.setText(driver.id)
             }
         }
 
@@ -68,9 +69,13 @@ class DriverEditProfileFragment : Fragment() {
 
     private fun checkAndRequestGalleryPermission() {
         val permission = android.Manifest.permission.READ_MEDIA_IMAGES
+
         when {
-            ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED ->
-                imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED -> {
+                imagePickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
             else -> permissionLauncher.launch(permission)
         }
     }
@@ -84,13 +89,10 @@ class DriverEditProfileFragment : Fragment() {
             return
         }
 
-        driverViewModel.updateProfile(fullName = updatedFullName, onSuccess = {
-            findNavController().navigateUp()
-        })
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        binding = null
+        val currentDriver = driverViewModel.driver.value ?: return
+        val updatedDriver = currentDriver.copy(fullName = updatedFullName)
+        driverViewModel.updateDriver(updatedDriver)
+        UserSessionManager.saveDriver(requireContext(), updatedDriver)
+        findNavController().navigateUp()
     }
 }

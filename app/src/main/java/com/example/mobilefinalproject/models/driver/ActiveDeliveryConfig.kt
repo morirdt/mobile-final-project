@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.core.graphics.toColorInt
 import android.graphics.Color
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.models.DeliveryStatus
 
 data class ButtonConfig(
     val text: String,
@@ -13,13 +14,15 @@ data class ButtonConfig(
 )
 
 data class ActiveDeliveryConfig(
+
     @param:DrawableRes val badgeDrawable: Int,
     val strokeColor: String,
     val buttons: List<ButtonConfig>
 )
 
 val activeDeliveryConfigs = mapOf<String, ActiveDeliveryConfig>(
-    "accepted" to ActiveDeliveryConfig(
+    DeliveryStatus.ACCEPTED.label to ActiveDeliveryConfig(
+
         badgeDrawable = R.drawable.badge_accepted,
         strokeColor = "#FFC107",
         buttons = listOf(
@@ -33,7 +36,8 @@ val activeDeliveryConfigs = mapOf<String, ActiveDeliveryConfig>(
             ButtonConfig("Cancel", R.drawable.button_red, Color.WHITE, 0.25f),
         )
     ),
-    "in_progress" to ActiveDeliveryConfig(
+    DeliveryStatus.IN_PROGRESS.label
+            to ActiveDeliveryConfig(
         badgeDrawable = R.drawable.badge_in_progress,
         strokeColor = "#2196F3",
         buttons = listOf(
@@ -46,14 +50,16 @@ val activeDeliveryConfigs = mapOf<String, ActiveDeliveryConfig>(
             ),
         )
     ),
-    "completed" to ActiveDeliveryConfig(
+    DeliveryStatus.COMPLETED.label to ActiveDeliveryConfig(
         badgeDrawable = R.drawable.badge_completed,
         strokeColor = "#388E3C",
         buttons = emptyList()
     ),
-    "cancelled" to ActiveDeliveryConfig(
+    DeliveryStatus.CANCELLED.label to ActiveDeliveryConfig(
         badgeDrawable = R.drawable.badge_cancelled,
         strokeColor = "#F44336",
         buttons = emptyList()
     ),
 )
+
+
