@@ -9,12 +9,15 @@ import com.example.mobilefinalproject.network.dto.UserMe
 import com.example.mobilefinalproject.network.dto.UserUpdateRequest
 import com.example.mobilefinalproject.repository.ApiResult
 import com.example.mobilefinalproject.repository.UserRepository
+import com.example.mobilefinalproject.repository.UploadRepository
+import android.net.Uri
 import com.example.mobilefinalproject.session.UserSessionManager
 import kotlinx.coroutines.launch
 
 class CustomerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repo = UserRepository(application)
+    private val uploadRepo = UploadRepository(application)
 
     private val _userMe = MutableLiveData<UserMe?>()
     val userMe: LiveData<UserMe?> = _userMe
@@ -44,7 +47,12 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
         _userMe.value = user
     }
 
-    fun updateProfile(fullName: String? = null, phone: String? = null, onSuccess: (() -> Unit)? = null) {
+    fun updateProfile(
+        fullName: String? = null,
+        phone: String? = null,
+        imageUri: Uri? = null,
+        onSuccess: (() -> Unit)? = null
+    ) {
         viewModelScope.launch {
             _loading.value = true
             when (val result = repo.updateMe(UserUpdateRequest(fullName = fullName, phone = phone))) {
@@ -55,7 +63,24 @@ class CustomerViewModel(application: Application) : AndroidViewModel(application
                     UserSessionManager.getSession(ctx)?.let { session ->
                         UserSessionManager.saveSession(ctx, session.copy(fullName = result.data.fullName))
                     }
-                    onSuccess?.invoke()
+
+                    // If the user selected a new profile image, upload it now.
+                    if (imageUri != null) {
+                        val hadImageBefore = _userMe.value?.profileImageUrl != null
+                        when (val uploadResult = uploadRepo.uploadProfileImage(imageUri, existing = hadImageBefore)) {
+                            is ApiResult.Success -> {
+                                // Refresh user data from server so profileImageUrl is up-to-date
+                                loadMe()
+                                onSuccess?.invoke()
+                            }
+                            is ApiResult.Error -> {
+                                _error.value = uploadResult.message
+                                // Do not call onSuccess when upload fails
+                            }
+                        }
+                    } else {
+                        onSuccess?.invoke()
+                    }
                 }
                 is ApiResult.Error -> _error.value = result.message
             }

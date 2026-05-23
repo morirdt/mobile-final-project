@@ -1,6 +1,7 @@
 package com.example.mobilefinalproject.ui.driver
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -8,10 +9,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
+import com.example.mobilefinalproject.BuildConfig
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentDriverProfileBinding
 import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
+import com.squareup.picasso.Picasso
 
 class DriverProfileFragment : Fragment() {
     private val driverViewModel: DriverViewModel by activityViewModels()
@@ -29,9 +32,23 @@ class DriverProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
+
         driverViewModel.userMe.observe(viewLifecycleOwner) { user ->
+            Log.d("DriverProfileFragment", user.toString())
             binding?.driverProfileNameTextView?.text = user?.fullName
-            binding?.driverProfileIdTextView?.text = user?.id?.toString()
+
+            // Load profile image from server
+            if (user?.profileImageUrl != null) {
+                val profilePath = if (user.profileImageUrl.startsWith("/")) {
+                    user.profileImageUrl.substring(1)
+                } else {
+                    user.profileImageUrl
+                }
+                val imageUrl = "${BuildConfig.BASE_URL}${profilePath}"
+                Picasso.get().load(imageUrl).placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person).into(binding?.profileImageView)
+            }
         }
 
         binding?.driverProfileEditButton?.setOnClickListener {
@@ -48,7 +65,8 @@ class DriverProfileFragment : Fragment() {
         driverViewModel.setOfflineAndLogout {
             driverViewModel.clearDriver()
             UserSessionManager.clearSession(requireContext())
-            val parentNavController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
+            val parentNavController =
+                Navigation.findNavController(requireActivity(), R.id.nav_host_fragment)
             parentNavController.navigate(R.id.action_global_loginFragment)
         }
     }

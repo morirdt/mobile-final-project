@@ -15,6 +15,7 @@ import com.example.mobilefinalproject.repository.ApiResult
 import com.example.mobilefinalproject.repository.AuthRepository
 import com.example.mobilefinalproject.repository.UserRepository
 import com.example.mobilefinalproject.session.UserSessionManager
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 import com.google.android.material.button.MaterialButton
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 class RegisterFragment : Fragment() {
 
     private var binding: FragmentRegisterBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private val driverViewModel: DriverViewModel by activityViewModels()
     private val customerViewModel: CustomerViewModel by activityViewModels()
 
@@ -36,6 +38,10 @@ class RegisterFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentRegisterBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
@@ -54,21 +60,21 @@ class RegisterFragment : Fragment() {
 
     private fun setupCreateAccountButton() {
         binding?.createAccountButton?.setOnClickListener {
-            val fullName = binding?.fullNameTextInputEditText?.text?.toString()?.trim().orEmpty()
-            val email    = binding?.idTextInputEditText?.text?.toString()?.trim().orEmpty()
-            val password = binding?.passwordTextInputEditText?.text?.toString().orEmpty()
+            val fullName = binding?.registerFullNameTextInputEditText?.text?.toString()?.trim().orEmpty()
+            val email    = binding?.registerEmailTextInputEditText?.text?.toString()?.trim().orEmpty()
+            val password = binding?.registerPasswordTextInputEditText?.text?.toString().orEmpty()
 
             var valid = true
             if (fullName.isBlank()) {
-                binding?.fullNameTextInputEditText?.error = "Full name is required"
+                binding?.registerFullNameTextInputEditText?.error = "Full name is required"
                 valid = false
             }
             if (email.isBlank()) {
-                binding?.idTextInputEditText?.error = "Email is required"
+                binding?.registerEmailTextInputEditText?.error = "Email is required"
                 valid = false
             }
             if (password.isBlank()) {
-                binding?.passwordTextInputEditText?.error = "Password is required"
+                binding?.registerPasswordTextInputEditText?.error = "Password is required"
                 valid = false
             }
             if (!valid) return@setOnClickListener
@@ -100,7 +106,8 @@ class RegisterFragment : Fragment() {
                     is ApiResult.Success -> {
                         // Auto-login after registration
                         val role = if (selectedUserType == UserType.DRIVER) "driver" else "customer"
-                        when (val tokenResult = authRepo.loginJson(email, password, role)) {
+                        val tokenResult = authRepo.loginJson(email, password, role)
+                        when (tokenResult) {
                             is ApiResult.Error -> {
                                 setLoading(false)
                                 Toast.makeText(
@@ -152,6 +159,7 @@ class RegisterFragment : Fragment() {
     private fun setLoading(loading: Boolean) {
         binding?.createAccountButton?.isEnabled = !loading
         binding?.createAccountButton?.text = if (loading) "Creating account…" else "Create Account"
+        if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
     }
 
     private fun setupUserTypeToggle() {
@@ -197,6 +205,8 @@ class RegisterFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

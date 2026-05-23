@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.mobilefinalproject.databinding.FragmentCustomerContainerBinding
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
 import com.example.mobilefinalproject.R
@@ -16,6 +17,7 @@ import com.example.mobilefinalproject.R
 class CustomerContainerFragment : Fragment() {
 
     private var binding: FragmentCustomerContainerBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private lateinit var customerViewModel: CustomerViewModel
     private lateinit var orderViewModel: OrderViewModel
 
@@ -25,6 +27,10 @@ class CustomerContainerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerContainerBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
@@ -34,6 +40,10 @@ class CustomerContainerFragment : Fragment() {
         // Initialize ViewModels at activity scope
         customerViewModel = ViewModelProvider(requireActivity())[CustomerViewModel::class.java]
         orderViewModel = ViewModelProvider(requireActivity())[OrderViewModel::class.java]
+
+        customerViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
 
         // Load customer profile if not already loaded
         if (customerViewModel.userMe.value == null) {
@@ -64,6 +74,8 @@ class CustomerContainerFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

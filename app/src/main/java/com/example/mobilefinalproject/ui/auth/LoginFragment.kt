@@ -15,6 +15,7 @@ import com.example.mobilefinalproject.repository.ApiResult
 import com.example.mobilefinalproject.repository.AuthRepository
 import com.example.mobilefinalproject.repository.UserRepository
 import com.example.mobilefinalproject.session.UserSessionManager
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 import com.google.android.material.button.MaterialButton
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 class LoginFragment : Fragment() {
 
     private var binding: FragmentLoginBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private val driverViewModel: DriverViewModel by activityViewModels()
     private val customerViewModel: CustomerViewModel by activityViewModels()
 
@@ -36,6 +38,10 @@ class LoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
@@ -62,15 +68,15 @@ class LoginFragment : Fragment() {
 
     private fun setupLoginButton() {
         binding?.loginButton?.setOnClickListener {
-            val email = binding?.idTextInputEditText?.text?.toString()?.trim().orEmpty()
-            val password = binding?.passwordTextInputEditText?.text?.toString().orEmpty()
+            val email = binding?.loginEmailTextInputEditText?.text?.toString()?.trim().orEmpty()
+            val password = binding?.loginPasswordTextInputEditText?.text?.toString().orEmpty()
 
             if (email.isBlank()) {
-                binding?.idTextInputEditText?.error = "Email is required"
+                binding?.loginEmailTextInputEditText?.error = "Email is required"
                 return@setOnClickListener
             }
             if (password.isBlank()) {
-                binding?.passwordTextInputEditText?.error = "Password is required"
+                binding?.loginPasswordTextInputEditText?.error = "Password is required"
                 return@setOnClickListener
             }
 
@@ -81,7 +87,8 @@ class LoginFragment : Fragment() {
                 val authRepo = AuthRepository(requireContext())
                 val userRepo = UserRepository(requireContext())
 
-                when (val tokenResult = authRepo.loginJson(email, password, role)) {
+                val tokenResult = authRepo.loginJson(email, password, role)
+                when (tokenResult) {
                     is ApiResult.Error -> {
                         setLoading(false)
                         Toast.makeText(requireContext(), tokenResult.message, Toast.LENGTH_LONG).show()
@@ -127,6 +134,7 @@ class LoginFragment : Fragment() {
     private fun setLoading(loading: Boolean) {
         binding?.loginButton?.isEnabled = !loading
         binding?.loginButton?.text = if (loading) "Logging in…" else "Login"
+        if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
     }
 
     private fun setupRegisterLink() {
@@ -178,6 +186,8 @@ class LoginFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

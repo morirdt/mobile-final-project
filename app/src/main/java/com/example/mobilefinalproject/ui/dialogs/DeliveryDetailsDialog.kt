@@ -5,14 +5,19 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import android.view.View
 import androidx.appcompat.app.AlertDialog
+import com.example.mobilefinalproject.BuildConfig
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.models.driver.ButtonConfig
 import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
+import com.example.mobilefinalproject.models.toStatusLabel
 import com.example.mobilefinalproject.network.dto.OrderRead
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Locale
+
+import android.util.Log
 
 class DeliveryDetailsDialog(private val context: Context) {
 
@@ -44,14 +49,16 @@ class DeliveryDetailsDialog(private val context: Context) {
         val destTextView       = view.findViewById<TextView>(R.id.dialog_destination_address_text_view)
         val descriptionTextView= view.findViewById<TextView>(R.id.dialog_description_text_view)
         val imageView          = view.findViewById<ImageView>(R.id.dialog_delivery_image_view)
+        val imageCard          = imageView.parent as? View
         val buttonsContainer   = view.findViewById<LinearLayout>(R.id.dialog_buttons_container_linear_layout)
         val closeButton        = view.findViewById<TextView>(R.id.dialog_close_button)
 
+        Log.d("DeliveryDetailsDialog", order.toString())
         // Populate
         nameTextView.text = if (showDriverInfo && order.driverId != null) "Driver #${order.driverId}"
                             else "Customer #${order.customerId}"
         priceTextView.text = String.format(Locale.getDefault(), "$%.2f", order.priceCents / 100.0)
-        statusTextView.text = order.status
+        statusTextView.text = order.status.toStatusLabel()
 
         activeDeliveryConfigs[order.status]?.let { statusBadge.setBackgroundResource(it.badgeDrawable) }
 
@@ -68,15 +75,28 @@ class DeliveryDetailsDialog(private val context: Context) {
         descriptionTextView.text = order.cargoDescription?.takeIf { it.isNotBlank() } ?: "No description"
 
         if (!order.cargoImageUrl.isNullOrBlank()) {
-            Picasso.get().load(order.cargoImageUrl).into(imageView)
+            imageCard?.visibility = View.VISIBLE
+            val cargoPath = if (order.cargoImageUrl.startsWith("/")) {
+                order.cargoImageUrl.substring(1)
+            } else {
+                order.cargoImageUrl
+            }
+            val imageUrl = "${BuildConfig.BASE_URL}${cargoPath}"
+            Picasso.get()
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_placeholder_image)
+                .error(R.drawable.ic_placeholder_image)
+                .into(imageView)
         } else {
-            imageView.setImageResource(R.drawable.ic_placeholder_image)
+            Picasso.get().cancelRequest(imageView)
+            imageView.setImageDrawable(null)
+            imageCard?.visibility = View.GONE
         }
 
         if (showActions) {
             setupActionButtons(order, buttonsContainer, dialog, onAccept, onStart, onComplete, onCancel)
         } else {
-            buttonsContainer?.visibility = android.view.View.GONE
+            buttonsContainer?.visibility = View.GONE
         }
 
         closeButton.setOnClickListener { dialog.dismiss() }
@@ -101,13 +121,13 @@ class DeliveryDetailsDialog(private val context: Context) {
         }
 
         buttons.filter { !it.text.equals("Details", ignoreCase = true) }.forEach { cfg ->
-            addButton(order, container, cfg.text, cfg.backgroundRes, cfg.textColor, cfg.weight, dialog,
+            addButton(container, cfg.text, cfg.backgroundRes, cfg.textColor, cfg.weight, dialog,
                 onAccept, onStart, onComplete, onCancel)
         }
     }
 
     private fun addButton(
-        order: OrderRead, container: LinearLayout,
+        container: LinearLayout,
         text: String, backgroundRes: Int, textColor: Int, weight: Float,
         dialog: AlertDialog,
         onAccept: (() -> Unit)?,

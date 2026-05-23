@@ -13,6 +13,7 @@ import com.example.mobilefinalproject.models.driver.activeDeliveryConfigs
 import com.example.mobilefinalproject.network.dto.OrderRead
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.example.mobilefinalproject.models.toStatusLabel
 
 class ActiveDeliveryAdapter(
     var orders: List<OrderRead> = emptyList(),
@@ -45,7 +46,8 @@ class ActiveDeliveryAdapter(
 
         fun bind(order: OrderRead) {
             val status = order.status
-            binding.activeDeliveryStatusTextView.text = status
+            // display a user-friendly title-case label (e.g. "in_progress" -> "In Progress")
+            binding.activeDeliveryStatusTextView.text = status.toStatusLabel()
             binding.activeDeliveryPriceTextView.text =
                 String.format(Locale.getDefault(), "$%.2f", order.priceCents / 100.0)
 

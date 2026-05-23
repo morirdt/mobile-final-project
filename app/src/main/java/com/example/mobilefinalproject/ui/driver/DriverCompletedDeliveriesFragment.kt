@@ -9,11 +9,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mobilefinalproject.adapters.CompletedDeliveryAdapter
 import com.example.mobilefinalproject.databinding.FragmentDriverCompletedDeliveriesBinding
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
 
 class DriverCompletedDeliveriesFragment : Fragment() {
     private val orderViewModel: OrderViewModel by activityViewModels()
     private var binding: FragmentDriverCompletedDeliveriesBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -21,6 +23,10 @@ class DriverCompletedDeliveriesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentDriverCompletedDeliveriesBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
@@ -32,6 +38,10 @@ class DriverCompletedDeliveriesFragment : Fragment() {
         orderViewModel.completedOrders.observe(viewLifecycleOwner) { orders ->
             binding?.driverCompletedDeliveriesRecyclerView?.adapter = CompletedDeliveryAdapter(orders)
         }
+
+        orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
     }
 
     override fun onResume() {
@@ -41,6 +51,8 @@ class DriverCompletedDeliveriesFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

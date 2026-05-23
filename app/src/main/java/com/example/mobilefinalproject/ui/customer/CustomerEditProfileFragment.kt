@@ -12,7 +12,10 @@ import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.mobilefinalproject.BuildConfig
+import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.squareup.picasso.Picasso
 
@@ -20,6 +23,7 @@ class CustomerEditProfileFragment : Fragment() {
 
     private val customerViewModel: CustomerViewModel by activityViewModels()
     private var binding: FragmentCustomerEditProfileBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private var selectedImageUri: Uri? = null
 
     private val imagePickerLauncher = registerForActivityResult(
@@ -49,6 +53,10 @@ class CustomerEditProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerEditProfileBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
@@ -58,8 +66,30 @@ class CustomerEditProfileFragment : Fragment() {
         customerViewModel.userMe.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 binding?.customerEditProfileFullNameEditText?.setText(user.fullName)
-                binding?.customerEditProfileIdEditText?.setText(user.id.toString())
+                // Show the user's email in the read-only field instead of numeric ID
+                binding?.customerEditProfileEmailEditText?.setText(user.email)
+                
+                // Load profile image from server
+                if (user.profileImageUrl != null) {
+                    val profilePath = if (user.profileImageUrl.startsWith("/")) {
+                        user.profileImageUrl.substring(1)
+                    } else {
+                        user.profileImageUrl
+                    }
+                    val imageUrl = "${BuildConfig.BASE_URL}${profilePath}"
+                    binding?.customerEditProfileImageView?.let { imageView ->
+                        Picasso.get()
+                            .load(imageUrl)
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person)
+                            .into(imageView)
+                    }
+                }
             }
+        }
+
+        customerViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
         }
 
         binding?.customerEditProfileSaveButton?.setOnClickListener { saveProfile() }
@@ -85,13 +115,15 @@ class CustomerEditProfileFragment : Fragment() {
             return
         }
 
-        customerViewModel.updateProfile(fullName = updatedFullName, onSuccess = {
+        customerViewModel.updateProfile(fullName = updatedFullName, imageUri = selectedImageUri, onSuccess = {
             findNavController().navigateUp()
         })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

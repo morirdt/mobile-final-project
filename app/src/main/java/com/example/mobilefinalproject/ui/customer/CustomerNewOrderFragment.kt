@@ -1,7 +1,5 @@
 package com.example.mobilefinalproject.ui.customer
 
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -18,6 +16,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.databinding.FragmentCustomerNewOrderBinding
 import com.example.mobilefinalproject.network.dto.OrderCreateRequest
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
@@ -25,14 +24,11 @@ import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.squareup.picasso.Picasso
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 class CustomerNewOrderFragment : Fragment() {
-    private val calendar = Calendar.getInstance()
     private val orderViewModel: OrderViewModel by activityViewModels()
     private var binding: FragmentCustomerNewOrderBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private var pickupLat: Double = 0.0
     private var pickupLng: Double = 0.0
     private var dropoffLat: Double = 0.0
@@ -60,16 +56,22 @@ class CustomerNewOrderFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerNewOrderBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupAddressPickers()
-        setupDateTimePickers()
         setupImagePicker()
         setupFieldErrorClearing()
         setupButtonListeners()
+        orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
     }
 
     private fun setupFieldErrorClearing() {
@@ -81,18 +83,6 @@ class CustomerNewOrderFragment : Fragment() {
         binding?.customerNewOrderDestinationAddressEditText?.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus && !binding?.customerNewOrderDestinationAddressEditText?.text.isNullOrBlank()) {
                 binding?.customerNewOrderDestinationAddressLayout?.error = null
-            }
-        }
-        binding?.customerNewOrderPickupDateEditText?.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && !binding?.customerNewOrderPickupDateEditText?.text.isNullOrBlank()) {
-                binding?.root?.findViewById<com.google.android.material.textfield.TextInputLayout>(
-                    com.example.mobilefinalproject.R.id.customer_new_order_pickup_date_layout
-                )?.error = null
-            }
-        }
-        binding?.customerNewOrderPickupTimeEditText?.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && !binding?.customerNewOrderPickupTimeEditText?.text.isNullOrBlank()) {
-                binding?.customerNewOrderPickupTimeLayout?.error = null
             }
         }
         binding?.customerNewOrderDescriptionEditText?.setOnFocusChangeListener { _, hasFocus ->
@@ -244,18 +234,6 @@ class CustomerNewOrderFragment : Fragment() {
         launcher.launch(intent)
     }
 
-    private fun setupDateTimePickers() {
-        binding?.customerNewOrderPickupDateEditText?.setOnClickListener {
-            showDatePicker()
-        }
-
-        binding?.customerNewOrderPickupTimeEditText?.setOnClickListener {
-            showTimePicker { time ->
-                binding?.customerNewOrderPickupTimeEditText?.setText(time)
-            }
-        }
-    }
-
     private fun setupImagePicker() {
         binding?.customerNewOrderAddImageButton?.setOnClickListener {
             checkAndRequestGalleryPermission()
@@ -263,11 +241,7 @@ class CustomerNewOrderFragment : Fragment() {
     }
 
     private fun checkAndRequestGalleryPermission() {
-        val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            android.Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            android.Manifest.permission.READ_EXTERNAL_STORAGE
-        }
+        val permission = android.Manifest.permission.READ_MEDIA_IMAGES
 
         when {
             ContextCompat.checkSelfPermission(
@@ -282,42 +256,6 @@ class CustomerNewOrderFragment : Fragment() {
                 permissionLauncher.launch(permission)
             }
         }
-    }
-
-    private fun showDatePicker() {
-        val datePickerDialog = DatePickerDialog(
-            requireContext(),
-            { _, year, month, dayOfMonth ->
-                calendar.set(Calendar.YEAR, year)
-                calendar.set(Calendar.MONTH, month)
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                binding?.customerNewOrderPickupDateEditText?.setText(dateFormat.format(calendar.time))
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        datePickerDialog.datePicker.minDate = System.currentTimeMillis() - 1000
-        datePickerDialog.show()
-    }
-
-    private fun showTimePicker(onTimeSelected: (String) -> Unit) {
-        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-        val currentMinute = calendar.get(Calendar.MINUTE)
-
-        val timePickerDialog = TimePickerDialog(
-            requireContext(),
-            { _, hourOfDay, minute ->
-                val time = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
-                onTimeSelected(time)
-            },
-            currentHour,
-            currentMinute,
-            true
-        )
-        timePickerDialog.show()
     }
 
     private fun validateForm(): Boolean {
@@ -340,24 +278,6 @@ class CustomerNewOrderFragment : Fragment() {
             binding?.customerNewOrderDestinationAddressLayout?.error = null
         }
 
-        val dateText = binding?.customerNewOrderPickupDateEditText?.text?.toString()?.trim()
-        val dateLayout = binding?.root?.findViewById<com.google.android.material.textfield.TextInputLayout>(
-            com.example.mobilefinalproject.R.id.customer_new_order_pickup_date_layout
-        )
-        if (dateText.isNullOrEmpty()) {
-            dateLayout?.error = "Delivery date is required"
-            isValid = false
-        } else {
-            dateLayout?.error = null
-        }
-
-        val timeText = binding?.customerNewOrderPickupTimeEditText?.text?.toString()?.trim()
-        if (timeText.isNullOrEmpty()) {
-            binding?.customerNewOrderPickupTimeLayout?.error = "Pickup time is required"
-            isValid = false
-        } else {
-            binding?.customerNewOrderPickupTimeLayout?.error = null
-        }
 
         val descriptionText = binding?.customerNewOrderDescriptionEditText?.text?.toString()?.trim()
         val descriptionLayout = binding?.root?.findViewById<com.google.android.material.textfield.TextInputLayout>(
@@ -411,6 +331,7 @@ class CustomerNewOrderFragment : Fragment() {
                 cargoDescription = description,
                 priceCents = priceCents
             ),
+            imageUri = selectedImageUri,
             onSuccess = {
                 findNavController().navigate(com.example.mobilefinalproject.R.id.action_customerNewOrderFragment_to_customerHomeFragment)
             }
@@ -433,6 +354,8 @@ class CustomerNewOrderFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

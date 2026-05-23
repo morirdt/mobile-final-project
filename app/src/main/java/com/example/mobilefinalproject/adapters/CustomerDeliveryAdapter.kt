@@ -3,12 +3,14 @@ package com.example.mobilefinalproject.adapters
 import android.app.Dialog
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mobilefinalproject.BuildConfig
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.DialogDeliveryImagePreviewBinding
 import com.example.mobilefinalproject.databinding.ItemCustomerDeliveryBinding
@@ -17,6 +19,7 @@ import com.example.mobilefinalproject.network.dto.OrderRead
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Locale
+import com.example.mobilefinalproject.models.toStatusLabel
 
 class CustomerDeliveryAdapter(
     var orders: List<OrderRead> = emptyList(),
@@ -26,8 +29,10 @@ class CustomerDeliveryAdapter(
 ) : RecyclerView.Adapter<CustomerDeliveryAdapter.CustomerDeliveryViewHolder>() {
 
     fun submitList(newOrders: List<OrderRead>) {
+        val oldSize = orders.size
         orders = newOrders
-        notifyDataSetChanged()
+        if (oldSize > 0) notifyItemRangeRemoved(0, oldSize)
+        if (newOrders.isNotEmpty()) notifyItemRangeInserted(0, newOrders.size)
     }
 
     override fun getItemCount(): Int = orders.size
@@ -48,6 +53,7 @@ class CustomerDeliveryAdapter(
 
         fun bind(order: OrderRead) {
             val status = order.status
+            val imageCard = binding.customerDeliveryImageView.parent as? View
 
             // Driver name not in OrderRead directly; show driver ID if assigned
             binding.customerDeliveryDriverNameTextView.text =
@@ -67,13 +73,33 @@ class CustomerDeliveryAdapter(
             binding.customerDeliveryPickupAddressTextView.text = order.pickupAddress
             binding.customerDeliveryDestinationAddressTextView.text = order.dropoffAddress
 
-            binding.customerDeliveryStatusTextView.text = status
+            // show a friendly label for status values
+            binding.customerDeliveryStatusTextView.text = status.toStatusLabel()
             val badgeDrawable = activeDeliveryConfigs[status]?.badgeDrawable ?: R.drawable.badge_pending
             binding.customerDeliveryStatusBadgeLinearLayout.setBackgroundResource(badgeDrawable)
 
             binding.customerDeliveryCardView.strokeColor =
                 activeDeliveryConfigs[status]?.strokeColor?.toColorInt() ?: "#FFC107".toColorInt()
             binding.customerDeliveryCardView.strokeWidth = 2.dpToPx()
+
+            if (!order.cargoImageUrl.isNullOrBlank()) {
+                imageCard?.visibility = View.VISIBLE
+                val cargoPath = if (order.cargoImageUrl.startsWith("/")) {
+                    order.cargoImageUrl.substring(1)
+                } else {
+                    order.cargoImageUrl
+                }
+                val imageUrl = "${BuildConfig.BASE_URL}${cargoPath}"
+                Picasso.get()
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_placeholder_image)
+                    .error(R.drawable.ic_placeholder_image)
+                    .into(binding.customerDeliveryImageView)
+            } else {
+                Picasso.get().cancelRequest(binding.customerDeliveryImageView)
+                binding.customerDeliveryImageView.setImageDrawable(null)
+                imageCard?.visibility = View.GONE
+            }
 
             binding.customerDeliveryImageView.setOnClickListener {
                 showImagePreview(order)
@@ -137,11 +163,22 @@ class CustomerDeliveryAdapter(
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
             if (!order.cargoImageUrl.isNullOrBlank()) {
+                previewBinding.deliveryImagePreviewImageView.visibility = View.VISIBLE
+                val cargoPath = if (order.cargoImageUrl.startsWith("/")) {
+                    order.cargoImageUrl.substring(1)
+                } else {
+                    order.cargoImageUrl
+                }
+                val imageUrl = "${BuildConfig.BASE_URL}${cargoPath}"
                 Picasso.get()
-                    .load(order.cargoImageUrl)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_placeholder_image)
+                    .error(R.drawable.ic_placeholder_image)
                     .into(previewBinding.deliveryImagePreviewImageView)
             } else {
-                previewBinding.deliveryImagePreviewImageView.setImageResource(R.drawable.ic_placeholder_image)
+                Picasso.get().cancelRequest(previewBinding.deliveryImagePreviewImageView)
+                previewBinding.deliveryImagePreviewImageView.setImageDrawable(null)
+                previewBinding.deliveryImagePreviewImageView.visibility = View.GONE
             }
             dialog.show()
         }

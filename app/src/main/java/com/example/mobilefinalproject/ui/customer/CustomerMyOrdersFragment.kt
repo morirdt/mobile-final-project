@@ -13,12 +13,14 @@ import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.adapters.CustomerDeliveryAdapter
 import com.example.mobilefinalproject.databinding.FragmentCustomerMyOrdersBinding
 import com.example.mobilefinalproject.network.dto.OrderRead
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
 
 class CustomerMyOrdersFragment : Fragment() {
 
     private val orderViewModel: OrderViewModel by activityViewModels()
     private var binding: FragmentCustomerMyOrdersBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private var adapter: CustomerDeliveryAdapter? = null
     private var allOrders: List<OrderRead> = emptyList()
     private var selectedStatusFilter: String = ALL_STATUS_FILTER
@@ -29,6 +31,10 @@ class CustomerMyOrdersFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerMyOrdersBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         setupRecyclerView()
         setupStatusFilter()
         return binding?.root
@@ -36,6 +42,15 @@ class CustomerMyOrdersFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        orderViewModel.customerOrders.observe(viewLifecycleOwner) { orders ->
+            allOrders = orders
+            applyFilter()
+        }
+
+        orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
+
         orderViewModel.loadMyOrders()
     }
 
@@ -68,10 +83,6 @@ class CustomerMyOrdersFragment : Fragment() {
         )
         binding?.customerMyOrdersRecyclerView?.adapter = adapter
 
-        orderViewModel.customerOrders.observe(viewLifecycleOwner) { orders ->
-            allOrders = orders
-            applyFilter()
-        }
     }
 
     private fun setupStatusFilter() {
@@ -110,6 +121,8 @@ class CustomerMyOrdersFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 

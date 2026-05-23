@@ -20,12 +20,15 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditOrderBinding
 import com.example.mobilefinalproject.network.dto.OrderUpdateRequest
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.example.mobilefinalproject.BuildConfig
+import com.example.mobilefinalproject.R
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -36,6 +39,7 @@ class CustomerEditOrderFragment : Fragment() {
     private val orderViewModel: OrderViewModel by activityViewModels()
     private val args: CustomerEditOrderFragmentArgs by navArgs()
     private var binding: FragmentCustomerEditOrderBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private var pickupAddress: String = ""
     private var pickupLat: Double = 0.0
     private var pickupLng: Double = 0.0
@@ -44,6 +48,7 @@ class CustomerEditOrderFragment : Fragment() {
     private var dropoffLng: Double = 0.0
     private var selectedImageUri: Uri? = null
     private var isPlacesAutocompleteEnabled: Boolean = false
+    private var existingCargoImageUrl: String? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -62,6 +67,10 @@ class CustomerEditOrderFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerEditOrderBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
@@ -92,6 +101,7 @@ class CustomerEditOrderFragment : Fragment() {
             binding?.customerEditOrderSubmitButton?.isEnabled = !loading
             binding?.customerEditOrderSubmitButton?.text =
                 if (loading) "Updating…" else "Update Order"
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
         }
 
         // Show errors as toast
@@ -106,7 +116,6 @@ class CustomerEditOrderFragment : Fragment() {
         setupButtonListeners(orderId)
         setupLocationPickers()
         setupImagePicker()
-        setupDateTimePickers()
     }
 
     private fun prefillFields(
@@ -123,9 +132,20 @@ class CustomerEditOrderFragment : Fragment() {
         binding?.customerEditOrderDescriptionEditText?.setText(description)
         binding?.customerEditOrderBudgetEditText?.setText((priceCents / 100.0).toString())
 
+        existingCargoImageUrl = cargoImageUrl
         if (!cargoImageUrl.isNullOrBlank()) {
-            Picasso.get().load(cargoImageUrl).into(binding?.customerEditOrderImagePreview)
-            binding?.customerEditOrderImagePreview?.visibility = View.VISIBLE
+            val cargoPath = if (cargoImageUrl.startsWith("/")) cargoImageUrl.substring(1) else cargoImageUrl
+            val imageUrl = "${BuildConfig.BASE_URL}${cargoPath}"
+            binding?.customerEditOrderImagePreview?.let { imageView ->
+                Picasso.get()
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_placeholder_image)
+                    .error(R.drawable.ic_placeholder_image)
+                    .into(imageView)
+                imageView.visibility = View.VISIBLE
+            }
+        } else {
+            binding?.customerEditOrderImagePreview?.visibility = View.GONE
         }
     }
 
@@ -250,13 +270,6 @@ class CustomerEditOrderFragment : Fragment() {
         }
     }
 
-    private fun setupDateTimePickers() {
-        binding?.customerEditOrderPickupDateEditText?.setOnClickListener { showDatePicker() }
-        binding?.customerEditOrderPickupTimeEditText?.setOnClickListener { time ->
-            showTimePicker { binding?.customerEditOrderPickupTimeEditText?.setText(it) }
-        }
-    }
-
     private fun setupImagePicker() {
         binding?.customerEditOrderAddImageButton?.setOnClickListener {
             checkAndRequestGalleryPermission()
@@ -264,11 +277,7 @@ class CustomerEditOrderFragment : Fragment() {
     }
 
     private fun checkAndRequestGalleryPermission() {
-        val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            android.Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            android.Manifest.permission.READ_EXTERNAL_STORAGE
-        }
+        val permission = android.Manifest.permission.READ_MEDIA_IMAGES
         when {
             ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED ->
                 imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -283,7 +292,6 @@ class CustomerEditOrderFragment : Fragment() {
                 val selectedDate = Calendar.getInstance()
                 selectedDate.set(year, month, dayOfMonth)
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                binding?.customerEditOrderPickupDateEditText?.setText(dateFormat.format(selectedDate.time))
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -367,6 +375,8 @@ class CustomerEditOrderFragment : Fragment() {
                 cargoDescription = description,
                 priceCents = priceCents
             ),
+            imageUri = selectedImageUri,
+            hadImageBefore = !existingCargoImageUrl.isNullOrBlank(),
             onSuccess = {
                 Toast.makeText(requireContext(), "Order updated successfully", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
@@ -388,6 +398,8 @@ class CustomerEditOrderFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

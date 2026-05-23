@@ -37,7 +37,7 @@ object RetrofitClient {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
         }
-        return retrofit!!
+        return retrofit ?: throw IllegalStateException("Retrofit instance was not initialized")
     }
 
     inline fun <reified T> createService(context: Context): T =

@@ -3,6 +3,7 @@ package com.example.mobilefinalproject.ui.driver
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,13 +13,17 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.mobilefinalproject.BuildConfig
+import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentDriverEditProfileBinding
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 import com.squareup.picasso.Picasso
 
 class DriverEditProfileFragment : Fragment() {
     private val driverViewModel: DriverViewModel by activityViewModels()
     private var binding: FragmentDriverEditProfileBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private var selectedImageUri: Uri? = null
 
     private val imagePickerLauncher = registerForActivityResult(
@@ -48,6 +53,10 @@ class DriverEditProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentDriverEditProfileBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
     }
 
@@ -57,8 +66,30 @@ class DriverEditProfileFragment : Fragment() {
         driverViewModel.userMe.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 binding?.driverEditProfileFullNameEditText?.setText(user.fullName)
-                binding?.driverEditProfileIdEditText?.setText(user.id.toString())
+                binding?.driverEditProfileEmailEditText?.setText(user.email)
+                
+                // Load profile image from server
+                if (user.profileImageUrl != null) {
+                    val profilePath = if (user.profileImageUrl.startsWith("/")) {
+                        user.profileImageUrl.substring(1)
+                    } else {
+                        user.profileImageUrl
+                    }
+                    val imageUrl = "${BuildConfig.BASE_URL}${profilePath}"
+                    Log.i("DriverEditProfileFragment", "Image URL: $imageUrl")
+                    binding?.driverEditProfileImageView?.let { imageView ->
+                        Picasso.get()
+                            .load(imageUrl)
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person)
+                            .into(imageView)
+                    }
+                }
             }
+        }
+
+        driverViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
         }
 
         binding?.driverEditProfileSaveButton?.setOnClickListener { saveProfile() }
@@ -87,13 +118,15 @@ class DriverEditProfileFragment : Fragment() {
             return
         }
 
-        driverViewModel.updateProfile(fullName = updatedFullName, onSuccess = {
+        driverViewModel.updateProfile(fullName = updatedFullName, imageUri = selectedImageUri, onSuccess = {
             findNavController().navigateUp()
         })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 }

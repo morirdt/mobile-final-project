@@ -46,9 +46,10 @@ class OrderRepository(context: Context) {
     suspend fun pickupOrder(orderId: Int): ApiResult<OrderRead> =
         safeApiCall { api.pickupOrder(orderId) }
 
-    suspend fun completeOrder(orderId: Int): ApiResult<OrderRead> =
-        safeApiCall { api.completeOrder(orderId) }
-
+    suspend fun completeOrder(orderId: Int): ApiResult<OrderRead> {
+        safeApiCall { api.pickupOrder(orderId) }
+        return safeApiCall { api.completeOrder(orderId) }
+    }
     suspend fun cancelOrder(orderId: Int, reason: String? = null): ApiResult<OrderRead> =
         safeApiCall { api.cancelOrder(orderId, OrderCancelRequest(reason)) }
 
