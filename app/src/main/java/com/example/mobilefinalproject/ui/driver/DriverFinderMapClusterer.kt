@@ -1,13 +1,13 @@
 package com.example.mobilefinalproject.ui.driver
 
-import com.example.mobilefinalproject.network.dto.OrderRead
+import com.example.mobilefinalproject.models.Delivery
 
 object DriverFinderMapClusterer {
 
     data class DeliveryMapPoint(
         val latitude: Double,
         val longitude: Double,
-        val order: OrderRead,
+        val delivery: Delivery,
         val markerType: MarkerType,
         val title: String,
         val snippet: String,
@@ -26,30 +26,30 @@ object DriverFinderMapClusterer {
         DROPOFF,
     }
 
-    fun toMapPoints(orders: List<OrderRead>): List<DeliveryMapPoint> = buildList {
-        orders.forEach { order ->
-            if (order.pickupLat != 0.0 || order.pickupLng != 0.0) {
+    fun toMapPoints(deliveries: List<Delivery>): List<DeliveryMapPoint> = buildList {
+        deliveries.forEach { delivery ->
+            if (delivery.pickupLat != 0.0 || delivery.pickupLng != 0.0) {
                 add(
                     DeliveryMapPoint(
-                        latitude = order.pickupLat,
-                        longitude = order.pickupLng,
-                        order = order,
+                        latitude = delivery.pickupLat,
+                        longitude = delivery.pickupLng,
+                        delivery = delivery,
                         markerType = MarkerType.PICKUP,
-                        title = "Pickup - Customer #${order.customerId}",
-                        snippet = order.pickupAddress,
+                        title = "Pickup - ${delivery.customerName}",
+                        snippet = delivery.pickupAddress,
                     )
                 )
             }
 
-            if (order.dropoffLat != 0.0 || order.dropoffLng != 0.0) {
+            if (delivery.dropoffLat != 0.0 || delivery.dropoffLng != 0.0) {
                 add(
                     DeliveryMapPoint(
-                        latitude = order.dropoffLat,
-                        longitude = order.dropoffLng,
-                        order = order,
+                        latitude = delivery.dropoffLat,
+                        longitude = delivery.dropoffLng,
+                        delivery = delivery,
                         markerType = MarkerType.DROPOFF,
-                        title = "Drop-off - Customer #${order.customerId}",
-                        snippet = order.dropoffAddress,
+                        title = "Drop-off - ${delivery.customerName}",
+                        snippet = delivery.dropoffAddress,
                     )
                 )
             }
@@ -57,7 +57,9 @@ object DriverFinderMapClusterer {
     }
 
     fun cluster(points: List<DeliveryMapPoint>, zoom: Double): List<Cluster> {
-        if (points.isEmpty()) return emptyList()
+        if (points.isEmpty()) {
+            return emptyList()
+        }
 
         val cellSizeDegrees = cellSizeDegrees(zoom)
         return points

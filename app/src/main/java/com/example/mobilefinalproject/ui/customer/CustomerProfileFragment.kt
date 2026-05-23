@@ -4,20 +4,23 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.BuildConfig
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.example.mobilefinalproject.databinding.FragmentCustomerProfileBinding
-import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
 
 class CustomerProfileFragment : Fragment() {
     private val customerViewModel: CustomerViewModel by activityViewModels()
     private var binding: FragmentCustomerProfileBinding? = null
+    private var imageCacheManager: ImageCacheManager? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,6 +28,7 @@ class CustomerProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerProfileBinding.inflate(inflater, container, false)
+        imageCacheManager = ImageCacheManager(requireContext().applicationContext)
         return binding?.root
     }
 
@@ -42,8 +46,17 @@ class CustomerProfileFragment : Fragment() {
                     user.profileImageUrl
                 }
                 val imageUrl = "${BuildConfig.BASE_URL}${profilePath}"
-                Picasso.get().load(imageUrl).placeholder(R.drawable.ic_person)
-                    .error(R.drawable.ic_person).into(binding?.customerProfileImageView)
+                val imageView = binding?.customerProfileImageView
+                val cacheManager = imageCacheManager
+                if (imageView != null && cacheManager != null) {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        cacheManager.loadInto(
+                            url = imageUrl,
+                            imageView = imageView,
+                            placeholderRes = R.drawable.ic_person
+                        )
+                    }
+                }
             }
         }
 
@@ -65,6 +78,7 @@ class CustomerProfileFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        imageCacheManager = null
         binding = null
     }
 }

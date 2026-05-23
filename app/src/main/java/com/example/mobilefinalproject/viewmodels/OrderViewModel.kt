@@ -5,7 +5,9 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.mobilefinalproject.db.entity.OrderEntity
 import com.example.mobilefinalproject.network.dto.OrderCreateRequest
 import com.example.mobilefinalproject.network.dto.OrderRead
 import com.example.mobilefinalproject.network.dto.OrderUpdateRequest
@@ -19,31 +21,32 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = OrderRepository(application)
     private val uploadRepo = UploadRepository(application)
 
-    // ── Customer: my orders ──────────────────────────────────────────────────
-    private val _customerOrders = MutableLiveData<List<OrderRead>>(emptyList())
-    val customerOrders: LiveData<List<OrderRead>> = _customerOrders
+    // ── Room-backed reactive LiveData (auto-updates when DB changes) ──────
 
-    // ── Driver: active orders assigned to me ────────────────────────────────
-    private val _activeOrders = MutableLiveData<List<OrderRead>>(emptyList())
-    val activeOrders: LiveData<List<OrderRead>> = _activeOrders
+    /** Customer's full order history, served from Room cache. */
+    val customerOrders: LiveData<List<OrderRead>> =
+        repo.observeCustomerOrders().asLiveData(viewModelScope.coroutineContext)
 
-    // ── Driver: completed orders ─────────────────────────────────────────────
-    private val _completedOrders = MutableLiveData<List<OrderRead>>(emptyList())
-    val completedOrders: LiveData<List<OrderRead>> = _completedOrders
+    /** Driver: active (accepted / in-progress) orders, served from Room cache. */
+    val activeOrders: LiveData<List<OrderRead>> =
+        repo.observeActiveDriverOrders().asLiveData(viewModelScope.coroutineContext)
 
-    // ── Driver Finder: pending (unassigned) orders ───────────────────────────
-    private val _pendingOrders = MutableLiveData<List<OrderRead>>(emptyList())
-    val pendingOrders: LiveData<List<OrderRead>> = _pendingOrders
+    /** Driver: completed orders, served from Room cache. */
+    val completedOrders: LiveData<List<OrderRead>> =
+        repo.observeCompletedDriverOrders().asLiveData(viewModelScope.coroutineContext)
 
-    // ── Selected order (for map marker / detail dialog) ──────────────────────
+    /** Driver Finder: pending (unassigned) orders, served from Room cache. */
+    val pendingOrders: LiveData<List<OrderRead>> =
+        repo.observePendingOrders().asLiveData(viewModelScope.coroutineContext)
+
+    // ── Local-only state (not persisted) ───────────────────────────────────
+
     private val _selectedOrder = MutableLiveData<OrderRead?>(null)
     val selectedOrder: LiveData<OrderRead?> = _selectedOrder
 
-    // ── Error / toast messages ────────────────────────────────────────────────
     private val _error = MutableLiveData<String?>(null)
     val error: LiveData<String?> = _error
 
-    // ── Loading ───────────────────────────────────────────────────────────────
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
@@ -51,26 +54,14 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         _selectedOrder.value = order
     }
 
-    private fun List<OrderRead>.filterByStatus(vararg allowedStatuses: String): List<OrderRead> {
-        val allowed = allowedStatuses.map { it.lowercase() }.toSet()
-        return filter { it.status.lowercase() in allowed }
-    }
+    // ── Customer operations ────────────────────────────────────────────────
 
-    private fun isOrderAlreadyTracked(list: List<OrderRead>, orderId: Int): Boolean =
-        list.any { it.id == orderId }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // Customer operations
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /** Load the customer's own order history (all statuses). */
+    /** Triggers a network refresh; Room cache updates automatically → LiveData notifies UI. */
     fun loadMyOrders() {
         viewModelScope.launch {
             _loading.value = true
-            when (val result = repo.listHistory()) {
-                is ApiResult.Success -> _customerOrders.value = result.data.items
-                is ApiResult.Error -> _error.value = result.message
-            }
+            val result = repo.refreshCustomerOrders()
+            if (result is ApiResult.Error) _error.value = result.message
             _loading.value = false
         }
     }
@@ -85,15 +76,14 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             when (val result = repo.createOrder(request)) {
                 is ApiResult.Success -> {
                     val createdOrder = result.data
-
                     if (imageUri != null) {
                         when (val uploadResult = uploadRepo.uploadOrderImage(createdOrder.id, imageUri)) {
                             is ApiResult.Success -> Unit
                             is ApiResult.Error -> _error.value = uploadResult.message
                         }
                     }
-
-                    loadMyOrders()
+                    // Refresh cache so the new order appears in the list
+                    repo.refreshCustomerOrders()
                     onSuccess?.invoke(createdOrder)
                 }
                 is ApiResult.Error -> _error.value = result.message
@@ -113,15 +103,13 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             _loading.value = true
             when (val result = repo.updateOrder(orderId, request)) {
                 is ApiResult.Success -> {
-                    // If a new image was selected, upload it (POST/PUT depending on previous state)
                     if (imageUri != null) {
                         when (val uploadResult = uploadRepo.uploadOrderImage(orderId, imageUri, existing = hadImageBefore)) {
                             is ApiResult.Success -> Unit
                             is ApiResult.Error -> _error.value = uploadResult.message
                         }
                     }
-
-                    loadMyOrders()
+                    repo.refreshCustomerOrders()
                     onSuccess?.invoke()
                 }
                 is ApiResult.Error -> _error.value = result.message
@@ -135,7 +123,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             _loading.value = true
             when (val result = repo.cancelOrder(orderId, reason)) {
                 is ApiResult.Success -> {
-                    loadMyOrders()
+                    repo.refreshCustomerOrders()
                     onSuccess?.invoke()
                 }
                 is ApiResult.Error -> _error.value = result.message
@@ -144,21 +132,13 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Driver operations
-    // ─────────────────────────────────────────────────────────────────────────
+    // ── Driver operations ─────────────────────────────────────────────────
 
-    /** Load all orders currently assigned to the driver (accepted/in-progress/picked-up). */
     fun loadActiveDriverOrders() {
         viewModelScope.launch {
             _loading.value = true
-            when (val result = repo.listMyActive()) {
-                is ApiResult.Success -> _activeOrders.value = result.data.filterByStatus(
-                    "accepted",
-                    "in_progress"
-                )
-                is ApiResult.Error -> _error.value = result.message
-            }
+            val result = repo.refreshActiveDriverOrders()
+            if (result is ApiResult.Error) _error.value = result.message
             _loading.value = false
         }
     }
@@ -166,26 +146,17 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     fun loadCompletedDriverOrders() {
         viewModelScope.launch {
             _loading.value = true
-            when (val result = repo.listHistory()) {
-                is ApiResult.Success -> _completedOrders.value = result.data.items.filterByStatus(
-                    "completed"
-                )
-                is ApiResult.Error -> _error.value = result.message
-            }
+            val result = repo.refreshCompletedDriverOrders()
+            if (result is ApiResult.Error) _error.value = result.message
             _loading.value = false
         }
     }
 
-    /** Load pending (unassigned) orders visible to the driver for the Finder screen. */
     fun loadPendingOrders() {
         viewModelScope.launch {
             _loading.value = true
-            when (val result = repo.listAvailable()) {
-                is ApiResult.Success -> _pendingOrders.value = result.data.items.filterByStatus(
-                    "pending"
-                )
-                is ApiResult.Error -> _error.value = result.message
-            }
+            val result = repo.refreshPendingOrders()
+            if (result is ApiResult.Error) _error.value = result.message
             _loading.value = false
         }
     }
@@ -195,8 +166,8 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             _loading.value = true
             when (val result = repo.acceptOrder(orderId)) {
                 is ApiResult.Success -> {
-                    loadPendingOrders()
-                    loadActiveDriverOrders()
+                    repo.refreshPendingOrders()
+                    repo.refreshActiveDriverOrders()
                     onSuccess?.invoke()
                 }
                 is ApiResult.Error -> _error.value = result.message
@@ -210,7 +181,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             _loading.value = true
             when (val result = repo.startOrder(orderId)) {
                 is ApiResult.Success -> {
-                    loadActiveDriverOrders()
+                    repo.refreshActiveDriverOrders()
                     onSuccess?.invoke()
                 }
                 is ApiResult.Error -> _error.value = result.message
@@ -225,7 +196,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             _loading.value = true
             when (val result = repo.pickupOrder(orderId)) {
                 is ApiResult.Success -> {
-                    loadActiveDriverOrders()
+                    repo.refreshActiveDriverOrders()
                     onSuccess?.invoke()
                 }
                 is ApiResult.Error -> _error.value = result.message
@@ -240,9 +211,9 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
             _loading.value = true
             when (val result = repo.completeOrder(orderId)) {
                 is ApiResult.Success -> {
-                    loadActiveDriverOrders()
-                    loadCompletedDriverOrders()
-                    loadPendingOrders()
+                    repo.refreshActiveDriverOrders()
+                    repo.refreshCompletedDriverOrders()
+                    repo.refreshPendingOrders()
                     onSuccess?.invoke()
                 }
                 is ApiResult.Error -> _error.value = result.message
@@ -252,47 +223,28 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Optimistically mark an order as completed in the local lists so the UI updates immediately.
-     * Then call the API to persist the change; on failure we revert the optimistic update and
-     * surface an error message.
+     * Optimistically marks an order as completed in the local Room cache so the UI
+     * updates immediately, then calls the API to persist the change; reverts on failure.
      */
     fun completeOrderOptimistic(order: OrderRead) {
-        // Keep snapshots so we can restore them if the API call fails.
-        val previousActive = _activeOrders.value.orEmpty()
-        val previousCompleted = _completedOrders.value.orEmpty()
-        val previousPending = _pendingOrders.value.orEmpty()
-
-        // Remove from active list immediately and add to completed list
-        val currentActive = previousActive.toMutableList()
-        currentActive.removeAll { it.id == order.id }
-        _activeOrders.value = currentActive.filterByStatus("accepted", "in_progress")
-
-        val completed = previousCompleted.toMutableList()
-        if (!isOrderAlreadyTracked(completed, order.id)) {
-            // Insert a copy with status set to completed so UI shows it correctly
-            completed.add(0, order.copy(status = "completed"))
-        }
-        _completedOrders.value = completed.filterByStatus("completed")
-
-        val pending = previousPending.toMutableList()
-        pending.removeAll { it.id == order.id }
-        _pendingOrders.value = pending.filterByStatus("pending")
-
-        // Persist on background; revert if API call fails
         viewModelScope.launch {
+            // Optimistic DB writes — Room notifies LiveData observers instantly
+            repo.optimisticRemove(order.id, OrderEntity.LIST_DRIVER_ACTIVE)
+            repo.optimisticUpsert(order.copy(status = "completed"), OrderEntity.LIST_DRIVER_COMPLETED)
+            repo.optimisticRemove(order.id, OrderEntity.LIST_DRIVER_PENDING)
+
             _loading.value = true
             when (val result = repo.completeOrder(order.id)) {
                 is ApiResult.Success -> {
-                    // Refresh from server to ensure canonical state
-                    loadActiveDriverOrders()
-                    loadCompletedDriverOrders()
-                    loadPendingOrders()
+                    // Sync authoritative state from server
+                    repo.refreshActiveDriverOrders()
+                    repo.refreshCompletedDriverOrders()
+                    repo.refreshPendingOrders()
                 }
                 is ApiResult.Error -> {
-                    // Revert optimistic update
-                    _activeOrders.value = previousActive.filterByStatus("accepted", "in_progress")
-                    _completedOrders.value = previousCompleted.filterByStatus("completed")
-                    _pendingOrders.value = previousPending.filterByStatus("pending")
+                    // Revert optimistic changes
+                    repo.optimisticUpsert(order, OrderEntity.LIST_DRIVER_ACTIVE)
+                    repo.optimisticRemove(order.id, OrderEntity.LIST_DRIVER_COMPLETED)
                     _error.value = result.message
                 }
             }
