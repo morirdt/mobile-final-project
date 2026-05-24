@@ -93,8 +93,10 @@ class RegisterFragment : Fragment() {
                     // collect these fields in a future iteration.
                     authRepo.registerDriver(
                         email = email, password = password, fullName = fullName, phone = null,
-                        licenseNumber = "PENDING", vehicleType = "truck",
-                        vehiclePlate = "PENDING", vehicleCapacityKg = null
+                        licenseNumber = generateLicenseNumber(),
+                        vehicleType = "truck",
+                        vehiclePlate = generateVehiclePlate(),
+                        vehicleCapacityKg = null
                     )
                 }
 
@@ -201,6 +203,30 @@ class RegisterFragment : Fragment() {
     private fun setButtonOutlined(button: MaterialButton?) {
         button?.setBackgroundColor(resources.getColor(android.R.color.white, null))
         button?.setTextColor(resources.getColor(R.color.teal_700, null))
+    }
+
+    /**
+     * Generates a realistic-looking driver licence number, e.g. "DL-TX4829361".
+     * Format: "DL-" + 2 random uppercase letters + 7 random digits.
+     */
+    private fun generateLicenseNumber(): String {
+        val letters = ('A'..'Z').toList()
+        val digits  = ('0'..'9').toList()
+        val state   = (1..2).map { letters.random() }.joinToString("")
+        val number  = (1..7).map { digits.random() }.joinToString("")
+        return "DL-$state$number"
+    }
+
+    /**
+     * Generates a realistic-looking vehicle plate, e.g. "KXM-4731".
+     * Format: 3 random uppercase letters + "-" + 4 random digits.
+     */
+    private fun generateVehiclePlate(): String {
+        val letters = ('A'..'Z').toList()
+        val digits  = ('0'..'9').toList()
+        val alpha   = (1..3).map { letters.random() }.joinToString("")
+        val num     = (1..4).map { digits.random() }.joinToString("")
+        return "$alpha-$num"
     }
 
     override fun onDestroyView() {
