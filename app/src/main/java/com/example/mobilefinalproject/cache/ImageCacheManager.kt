@@ -1,32 +1,37 @@
 package com.example.mobilefinalproject.cache
 
 import android.content.Context
+import android.graphics.drawable.ColorDrawable
 import android.widget.ImageView
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.db.AppDatabase
 import com.example.mobilefinalproject.db.entity.CachedImageEntity
+import com.example.mobilefinalproject.session.TokenManager
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
-import java.net.URL
 import java.util.concurrent.TimeUnit
 
 /**
  * Manages a persistent local image cache on disk, tracked by Room.
  *
  * ## How it works
- * 1. [loadInto] loads an image into an [ImageView].  It first checks Room / disk for a
- *    cached copy and loads that immediately.  In the background it fetches the remote URL,
- *    saves the bytes to `filesDir/img_cache/`, and updates the Room record so the next call
- *    is served entirely from disk.
- * 2. [getCachedFile] returns the local [File] for a URL if it is already cached, or null.
- * 3. [evictStale] deletes cache entries (and their files) older than [maxAgeMs].
+ * 1. `loadInto` loads an image into an ImageView. It first checks Room/disk for a
+ *    cached copy and loads that immediately (no network, no placeholder flash).
+ *    In the background it re-downloads the remote URL so the disk copy stays current.
+ * 2. When no cached copy exists, Picasso fetches from network. A placeholder is shown
+ *    only if the ImageView is currently empty; otherwise the current image is kept
+ *    while the new one loads (prevents the "green icon flash" on teal background).
+ * 3. `invalidate` removes a URL from Room + disk + Picasso memory cache — call this
+ *    before loading a URL whose content has changed (e.g. after a profile photo update).
+ * 4. `evictStale` prunes entries older than a given age (default 7 days).
  *
- * Note: Picasso is also configured (in [AppApplication]) with a 50 MB HTTP disk cache via
- * OkHttp, so TLS-enabled remote images are automatically cached at the HTTP layer too.
- * [ImageCacheManager] adds a *permanent* local copy that survives cache eviction and works
- * fully offline.
+ * Auth note: `saveToCache` uses an OkHttpClient with the app's Bearer token so that
+ * images served from authenticated endpoints are downloaded correctly.
+ * Picasso itself is also configured with auth in AppApplication.
  */
 class ImageCacheManager(private val context: Context) {
 
@@ -34,12 +39,33 @@ class ImageCacheManager(private val context: Context) {
     private val cacheDir: File
         get() = File(context.filesDir, "img_cache").also { it.mkdirs() }
 
-    // ── Public API ─────────────────────────────────────────────────────────
+    /** Authenticated OkHttpClient used for disk-cache downloads. */
+    private val httpClient: OkHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor { chain ->
+                val token = TokenManager.getAccessToken(context)
+                val request = if (token != null) {
+                    chain.request().newBuilder()
+                        .header("Authorization", "Bearer $token")
+                        .build()
+                } else chain.request()
+                chain.proceed(request)
+            }
+            .build()
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────────
 
     /**
-     * Loads [url] into [imageView] using a placeholder drawable while loading.
-     * Serves the locally cached file when available; falls back to the network otherwise.
-     * After a successful network load the image is saved to disk for future offline access.
+     * Loads [url] into [imageView].
+     *
+     * - If a local cached file exists → display it instantly (no placeholder).
+     *   Refreshes the file in the background so it stays current.
+     * - If no cached file → load from network via Picasso (which has auth via
+     *   AppApplication). A placeholder is shown only when the ImageView is currently
+     *   empty, to avoid the green-background flash when re-navigating to the screen.
      */
     suspend fun loadInto(
         url: String?,
@@ -47,61 +73,80 @@ class ImageCacheManager(private val context: Context) {
         placeholderRes: Int = R.drawable.ic_person
     ) {
         if (url.isNullOrBlank()) {
-            imageView.setImageResource(placeholderRes)
+            withContext(Dispatchers.Main) { imageView.setImageResource(placeholderRes) }
             return
         }
 
-        // Try to serve from local cache first (instant, no network required)
+        // ── Serve from disk cache (zero network, zero placeholder flash) ────
         val cachedFile = getCachedFile(url)
         if (cachedFile != null) {
             withContext(Dispatchers.Main) {
                 Picasso.get()
                     .load(cachedFile)
-                    .placeholder(placeholderRes)
+                    .noPlaceholder()          // file is local – loads instantly, no flash
                     .error(placeholderRes)
                     .into(imageView)
             }
-            // Refresh the file in the background so it stays up-to-date
+            // Keep the disk copy fresh in the background
             refreshInBackground(url)
             return
         }
 
-        // No local copy — load from network and save to disk simultaneously
+        // ── No cached file: load from network ───────────────────────────────
         withContext(Dispatchers.Main) {
-            Picasso.get()
-                .load(url)
-                .placeholder(placeholderRes)
-                .error(placeholderRes)
-                .into(imageView)
+            val builder = Picasso.get().load(url).error(placeholderRes)
+            // Show placeholder only when the view is currently empty. If the view
+            // already shows something (previous image / app restoring state), keep
+            // that content while the new image loads – avoids the teal-background flash.
+            val isEmpty = imageView.drawable == null || imageView.drawable is ColorDrawable
+            if (isEmpty) builder.placeholder(placeholderRes) else builder.noPlaceholder()
+            builder.into(imageView)
         }
-        // Persist to disk for next offline access
+        // Persist for the next cold start / offline session
         saveToCache(url)
     }
 
     /**
-     * Returns the locally cached [File] for [url] if it exists on disk *and* in Room,
+     * Removes [url] from Room, deletes the local file, and invalidates Picasso's
+     * in-memory cache entry. Call this after the remote content at [url] has changed
+     * (e.g. after the user replaces their profile photo).
+     */
+    suspend fun invalidate(url: String) = withContext(Dispatchers.IO) {
+        dao.get(url)?.let { entity -> File(entity.localFilePath).delete() }
+        dao.delete(url)
+        withContext(Dispatchers.Main) {
+            runCatching { Picasso.get().invalidate(url) }
+        }
+    }
+
+    /**
+     * Returns the locally cached File for [url] if it exists on disk *and* in Room,
      * otherwise returns null.
      */
     suspend fun getCachedFile(url: String): File? = withContext(Dispatchers.IO) {
         val entity = dao.get(url) ?: return@withContext null
         val file = File(entity.localFilePath)
         if (file.exists()) file else {
-            // Stale Room entry — the file was deleted externally; clean up the DB row
+            // Stale Room entry (file deleted externally) — remove the DB row
             dao.delete(url)
             null
         }
     }
 
     /**
-     * Downloads [url] to the local cache dir and records the path in Room.
-     * Returns the saved [File] on success, or null on any error.
+     * Downloads [url] using an authenticated OkHttpClient and stores it on disk,
+     * then records the path in Room. Returns the saved File on success, null on error.
      */
     suspend fun saveToCache(url: String): File? = withContext(Dispatchers.IO) {
         return@withContext try {
             val fileName = url.hashCode().toString().replace("-", "n") + ".jpg"
             val destFile = File(cacheDir, fileName)
 
-            URL(url).openStream().use { input ->
+            val request = Request.Builder().url(url).build()
+            val response = httpClient.newCall(request).execute()
+            if (!response.isSuccessful) return@withContext null
+
+            response.body?.byteStream()?.use { input ->
                 destFile.outputStream().use { output -> input.copyTo(output) }
             }
 
@@ -124,13 +169,12 @@ class ImageCacheManager(private val context: Context) {
             dao.evictOlderThan(cutoff)
         }
 
-    // ── Private helpers ────────────────────────────────────────────────────
+    // ── Private helpers ─────────────────────────────────────────────────────
 
-    /** Fire-and-forget background refresh of the locally cached copy. */
+    /** Silently re-download [url] to disk so the cached copy stays up-to-date. */
     private suspend fun refreshInBackground(url: String) {
         withContext(Dispatchers.IO) {
             try { saveToCache(url) } catch (_: Exception) { /* best-effort */ }
         }
     }
 }
-

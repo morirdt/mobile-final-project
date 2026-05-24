@@ -11,19 +11,23 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.BuildConfig
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
 import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
 
 class CustomerEditProfileFragment : Fragment() {
 
     private val customerViewModel: CustomerViewModel by activityViewModels()
     private var binding: FragmentCustomerEditProfileBinding? = null
     private var loadingOverlay: LoadingOverlayController? = null
+    private var imageCacheManager: ImageCacheManager? = null
     private var selectedImageUri: Uri? = null
 
     private val imagePickerLauncher = registerForActivityResult(
@@ -31,6 +35,7 @@ class CustomerEditProfileFragment : Fragment() {
     ) { uri ->
         uri?.let {
             selectedImageUri = it
+            // Local URI preview — no caching needed, use Picasso directly.
             binding?.customerEditProfileImageView?.let { imageView ->
                 Picasso.get().load(selectedImageUri).into(imageView)
             }
@@ -57,6 +62,7 @@ class CustomerEditProfileFragment : Fragment() {
             requireContext(),
             requireActivity().findViewById(android.R.id.content)
         )
+        imageCacheManager = ImageCacheManager(requireContext().applicationContext)
         return binding?.root
     }
 
@@ -66,23 +72,24 @@ class CustomerEditProfileFragment : Fragment() {
         customerViewModel.userMe.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 binding?.customerEditProfileFullNameEditText?.setText(user.fullName)
-                // Show the user's email in the read-only field instead of numeric ID
                 binding?.customerEditProfileEmailEditText?.setText(user.email)
-                
-                // Load profile image from server
-                if (user.profileImageUrl != null) {
+
+                // Don't reload the image if the user already picked a new one from gallery.
+                if (selectedImageUri == null && user.profileImageUrl != null) {
                     val profilePath = if (user.profileImageUrl.startsWith("/")) {
                         user.profileImageUrl.substring(1)
                     } else {
                         user.profileImageUrl
                     }
                     val imageUrl = "${BuildConfig.BASE_URL}${profilePath}"
-                    binding?.customerEditProfileImageView?.let { imageView ->
-                        Picasso.get()
-                            .load(imageUrl)
-                            .placeholder(R.drawable.ic_person)
-                            .error(R.drawable.ic_person)
-                            .into(imageView)
+                    val imageView = binding?.customerEditProfileImageView ?: return@observe
+                    val cacheManager = imageCacheManager ?: return@observe
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        cacheManager.loadInto(
+                            url = imageUrl,
+                            imageView = imageView,
+                            placeholderRes = R.drawable.ic_person
+                        )
                     }
                 }
             }
@@ -124,6 +131,7 @@ class CustomerEditProfileFragment : Fragment() {
         super.onDestroyView()
         loadingOverlay?.detach()
         loadingOverlay = null
+        imageCacheManager = null
         binding = null
     }
 }

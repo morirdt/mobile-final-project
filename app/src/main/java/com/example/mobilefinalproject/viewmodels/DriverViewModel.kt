@@ -25,9 +25,9 @@ class DriverViewModel(application: Application) : AndroidViewModel(application) 
 
     // ── Room-backed reactive LiveData ─────────────────────────────────────
 
-    /** Emits the cached [DriverProfile] from Room; updates automatically after any network sync. */
-    val driverProfile: LiveData<DriverProfile?> =
-        driverRepo.observeMe().asLiveData(viewModelScope.coroutineContext)
+    private val _driverProfile = MutableLiveData<DriverProfile?>(null)
+    /** The last-fetched [DriverProfile] from the network. */
+    val driverProfile: LiveData<DriverProfile?> = _driverProfile
 
     /** Emits the cached [UserMe] from Room (common user fields like name / photo). */
     val userMe: LiveData<UserMe?> =
@@ -52,6 +52,8 @@ class DriverViewModel(application: Application) : AndroidViewModel(application) 
             _loading.value = true
             val result = repo.getMe()
             if (result is ApiResult.Error) _error.value = result.message
+            val driverResult = driverRepo.getMe()
+            if (driverResult is ApiResult.Success) _driverProfile.value = driverResult.data
             _loading.value = false
         }
     }
@@ -96,7 +98,7 @@ class DriverViewModel(application: Application) : AndroidViewModel(application) 
     fun updateDriverStatus(status: String) {
         viewModelScope.launch {
             when (val result = driverRepo.updateStatus(status)) {
-                is ApiResult.Success -> Unit   // Room cache is updated inside the repo
+                is ApiResult.Success -> _driverProfile.value = result.data
                 is ApiResult.Error -> _error.value = result.message
             }
         }
@@ -131,7 +133,7 @@ class DriverViewModel(application: Application) : AndroidViewModel(application) 
     fun clearDriver() {
         viewModelScope.launch {
             repo.clearCache()
-            driverRepo.clearCache()
+            _driverProfile.postValue(null)
         }
     }
 

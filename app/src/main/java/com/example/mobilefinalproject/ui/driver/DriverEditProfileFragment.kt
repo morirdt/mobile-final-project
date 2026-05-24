@@ -12,18 +12,22 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.BuildConfig
 import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.databinding.FragmentDriverEditProfileBinding
 import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
 
 class DriverEditProfileFragment : Fragment() {
     private val driverViewModel: DriverViewModel by activityViewModels()
     private var binding: FragmentDriverEditProfileBinding? = null
     private var loadingOverlay: LoadingOverlayController? = null
+    private var imageCacheManager: ImageCacheManager? = null
     private var selectedImageUri: Uri? = null
 
     private val imagePickerLauncher = registerForActivityResult(
@@ -31,6 +35,7 @@ class DriverEditProfileFragment : Fragment() {
     ) { uri ->
         uri?.let {
             selectedImageUri = it
+            // Local URI preview — no caching needed, use Picasso directly.
             binding?.driverEditProfileImageView?.let { imageView ->
                 Picasso.get().load(selectedImageUri).into(imageView)
             }
@@ -57,6 +62,7 @@ class DriverEditProfileFragment : Fragment() {
             requireContext(),
             requireActivity().findViewById(android.R.id.content)
         )
+        imageCacheManager = ImageCacheManager(requireContext().applicationContext)
         return binding?.root
     }
 
@@ -67,9 +73,9 @@ class DriverEditProfileFragment : Fragment() {
             if (user != null) {
                 binding?.driverEditProfileFullNameEditText?.setText(user.fullName)
                 binding?.driverEditProfileEmailEditText?.setText(user.email)
-                
-                // Load profile image from server
-                if (user.profileImageUrl != null) {
+
+                // Don't reload the image if the user already picked a new one from gallery.
+                if (selectedImageUri == null && user.profileImageUrl != null) {
                     val profilePath = if (user.profileImageUrl.startsWith("/")) {
                         user.profileImageUrl.substring(1)
                     } else {
@@ -77,12 +83,14 @@ class DriverEditProfileFragment : Fragment() {
                     }
                     val imageUrl = "${BuildConfig.BASE_URL}${profilePath}"
                     Log.i("DriverEditProfileFragment", "Image URL: $imageUrl")
-                    binding?.driverEditProfileImageView?.let { imageView ->
-                        Picasso.get()
-                            .load(imageUrl)
-                            .placeholder(R.drawable.ic_person)
-                            .error(R.drawable.ic_person)
-                            .into(imageView)
+                    val imageView = binding?.driverEditProfileImageView ?: return@observe
+                    val cacheManager = imageCacheManager ?: return@observe
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        cacheManager.loadInto(
+                            url = imageUrl,
+                            imageView = imageView,
+                            placeholderRes = R.drawable.ic_person
+                        )
                     }
                 }
             }
@@ -127,6 +135,7 @@ class DriverEditProfileFragment : Fragment() {
         super.onDestroyView()
         loadingOverlay?.detach()
         loadingOverlay = null
+        imageCacheManager = null
         binding = null
     }
 }
