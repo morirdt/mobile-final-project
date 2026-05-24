@@ -19,6 +19,7 @@ import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
 import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
+import android.widget.Toast
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
 
@@ -97,6 +98,13 @@ class CustomerEditProfileFragment : Fragment() {
 
         customerViewModel.loading.observe(viewLifecycleOwner) { loading ->
             if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
+
+        customerViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                customerViewModel.clearError()
+            }
         }
 
         binding?.customerEditProfileSaveButton?.setOnClickListener { saveProfile() }

@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.R
@@ -104,19 +103,10 @@ class ActiveDeliveryAdapter(
                 isFocusable = true
                 setOnClickListener {
                     when {
-                        text.equals("Start", ignoreCase = true) -> {
-                            onStart?.invoke(order)
-                            Toast.makeText(context, "Order started", Toast.LENGTH_SHORT).show()
-                        }
-                        text.equals("Complete", ignoreCase = true) -> {
-                            onComplete?.invoke(order)
-                            Toast.makeText(context, "Order completed", Toast.LENGTH_SHORT).show()
-                        }
+                        text.equals("Start", ignoreCase = true) -> onStart?.invoke(order)
+                        text.equals("Complete", ignoreCase = true) -> onComplete?.invoke(order)
                         text.equals("Details", ignoreCase = true) -> onDetails?.invoke(order)
-                        text.equals("Cancel", ignoreCase = true) -> {
-                            onCancel?.invoke(order)
-                            Toast.makeText(context, "Order cancelled", Toast.LENGTH_SHORT).show()
-                        }
+                        text.equals("Cancel", ignoreCase = true) -> onCancel?.invoke(order)
                     }
                 }
             }

@@ -14,6 +14,7 @@ import com.example.mobilefinalproject.repository.ApiResult
 import com.example.mobilefinalproject.repository.DriverRepository
 import com.example.mobilefinalproject.repository.UploadRepository
 import com.example.mobilefinalproject.repository.UserRepository
+import com.example.mobilefinalproject.repository.friendlyMessage
 import com.example.mobilefinalproject.session.UserSessionManager
 import kotlinx.coroutines.launch
 
@@ -51,7 +52,7 @@ class DriverViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _loading.value = true
             val result = repo.getMe()
-            if (result is ApiResult.Error) _error.value = result.message
+            if (result is ApiResult.Error) _error.value = result.friendlyMessage()
             val driverResult = driverRepo.getMe()
             if (driverResult is ApiResult.Success) _driverProfile.value = driverResult.data
             _loading.value = false
@@ -83,13 +84,13 @@ class DriverViewModel(application: Application) : AndroidViewModel(application) 
                                 repo.getMe()
                                 onSuccess?.invoke()
                             }
-                            is ApiResult.Error -> _error.value = uploadResult.message
+                            is ApiResult.Error -> _error.value = uploadResult.friendlyMessage()
                         }
                     } else {
                         onSuccess?.invoke()
                     }
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -99,7 +100,7 @@ class DriverViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             when (val result = driverRepo.updateStatus(status)) {
                 is ApiResult.Success -> _driverProfile.value = result.data
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
         }
     }

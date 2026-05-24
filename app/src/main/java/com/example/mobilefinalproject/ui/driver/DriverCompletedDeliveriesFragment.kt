@@ -11,6 +11,7 @@ import com.example.mobilefinalproject.adapters.CompletedDeliveryAdapter
 import com.example.mobilefinalproject.databinding.FragmentDriverCompletedDeliveriesBinding
 import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
+import android.widget.Toast
 
 class DriverCompletedDeliveriesFragment : Fragment() {
     private val orderViewModel: OrderViewModel by activityViewModels()
@@ -41,6 +42,13 @@ class DriverCompletedDeliveriesFragment : Fragment() {
 
         orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
             if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
+
+        orderViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
+            }
         }
     }
 

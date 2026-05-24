@@ -15,6 +15,7 @@ import com.example.mobilefinalproject.databinding.FragmentCustomerMyOrdersBindin
 import com.example.mobilefinalproject.network.dto.OrderRead
 import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
+import android.widget.Toast
 
 class CustomerMyOrdersFragment : Fragment() {
 
@@ -49,6 +50,13 @@ class CustomerMyOrdersFragment : Fragment() {
 
         orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
             if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
+
+        orderViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
+            }
         }
 
         orderViewModel.loadMyOrders()

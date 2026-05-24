@@ -12,6 +12,7 @@ import com.example.mobilefinalproject.network.dto.OrderCreateRequest
 import com.example.mobilefinalproject.network.dto.OrderRead
 import com.example.mobilefinalproject.network.dto.OrderUpdateRequest
 import com.example.mobilefinalproject.repository.ApiResult
+import com.example.mobilefinalproject.repository.friendlyMessage
 import com.example.mobilefinalproject.repository.OrderRepository
 import com.example.mobilefinalproject.repository.UploadRepository
 import kotlinx.coroutines.launch
@@ -61,7 +62,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _loading.value = true
             val result = repo.refreshCustomerOrders()
-            if (result is ApiResult.Error) _error.value = result.message
+            if (result is ApiResult.Error) _error.value = result.friendlyMessage()
             _loading.value = false
         }
     }
@@ -79,14 +80,14 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     if (imageUri != null) {
                         when (val uploadResult = uploadRepo.uploadOrderImage(createdOrder.id, imageUri)) {
                             is ApiResult.Success -> Unit
-                            is ApiResult.Error -> _error.value = uploadResult.message
+                            is ApiResult.Error -> _error.value = uploadResult.friendlyMessage()
                         }
                     }
                     // Refresh cache so the new order appears in the list
                     repo.refreshCustomerOrders()
                     onSuccess?.invoke(createdOrder)
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -106,13 +107,13 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     if (imageUri != null) {
                         when (val uploadResult = uploadRepo.uploadOrderImage(orderId, imageUri, existing = hadImageBefore)) {
                             is ApiResult.Success -> Unit
-                            is ApiResult.Error -> _error.value = uploadResult.message
+                            is ApiResult.Error -> _error.value = uploadResult.friendlyMessage()
                         }
                     }
                     repo.refreshCustomerOrders()
                     onSuccess?.invoke()
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -126,7 +127,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     repo.refreshCustomerOrders()
                     onSuccess?.invoke()
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -138,7 +139,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _loading.value = true
             val result = repo.refreshActiveDriverOrders()
-            if (result is ApiResult.Error) _error.value = result.message
+            if (result is ApiResult.Error) _error.value = result.friendlyMessage()
             _loading.value = false
         }
     }
@@ -147,7 +148,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _loading.value = true
             val result = repo.refreshCompletedDriverOrders()
-            if (result is ApiResult.Error) _error.value = result.message
+            if (result is ApiResult.Error) _error.value = result.friendlyMessage()
             _loading.value = false
         }
     }
@@ -156,7 +157,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _loading.value = true
             val result = repo.refreshPendingOrders()
-            if (result is ApiResult.Error) _error.value = result.message
+            if (result is ApiResult.Error) _error.value = result.friendlyMessage()
             _loading.value = false
         }
     }
@@ -170,7 +171,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     repo.refreshActiveDriverOrders()
                     onSuccess?.invoke()
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -184,7 +185,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     repo.refreshActiveDriverOrders()
                     onSuccess?.invoke()
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -199,7 +200,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     repo.refreshActiveDriverOrders()
                     onSuccess?.invoke()
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -216,7 +217,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     repo.refreshPendingOrders()
                     onSuccess?.invoke()
                 }
-                is ApiResult.Error -> _error.value = result.message
+                is ApiResult.Error -> _error.value = result.friendlyMessage()
             }
             _loading.value = false
         }
@@ -245,7 +246,7 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
                     // Revert optimistic changes
                     repo.optimisticUpsert(order, OrderEntity.LIST_DRIVER_ACTIVE)
                     repo.optimisticRemove(order.id, OrderEntity.LIST_DRIVER_COMPLETED)
-                    _error.value = result.message
+                    _error.value = result.friendlyMessage()
                 }
             }
             _loading.value = false

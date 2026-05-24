@@ -14,6 +14,7 @@ import com.example.mobilefinalproject.databinding.FragmentRegisterBinding
 import com.example.mobilefinalproject.repository.ApiResult
 import com.example.mobilefinalproject.repository.AuthRepository
 import com.example.mobilefinalproject.repository.UserRepository
+import com.example.mobilefinalproject.repository.friendlyMessage
 import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
@@ -103,7 +104,7 @@ class RegisterFragment : Fragment() {
                 when (registerResult) {
                     is ApiResult.Error -> {
                         setLoading(false)
-                        Toast.makeText(requireContext(), registerResult.message, Toast.LENGTH_LONG).show()
+                        Toast.makeText(requireContext(), registerResult.friendlyMessage(), Toast.LENGTH_LONG).show()
                     }
                     is ApiResult.Success -> {
                         // Auto-login after registration
@@ -123,7 +124,7 @@ class RegisterFragment : Fragment() {
                                 when (val meResult = userRepo.getMe()) {
                                     is ApiResult.Error -> {
                                         setLoading(false)
-                                        Toast.makeText(requireContext(), meResult.message, Toast.LENGTH_LONG).show()
+                                        Toast.makeText(requireContext(), meResult.friendlyMessage(), Toast.LENGTH_LONG).show()
                                     }
                                     is ApiResult.Success -> {
                                         val me = meResult.data

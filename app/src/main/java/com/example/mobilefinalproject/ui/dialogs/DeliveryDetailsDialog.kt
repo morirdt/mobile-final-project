@@ -4,7 +4,6 @@ import android.content.Context
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.example.mobilefinalproject.BuildConfig
@@ -153,17 +152,14 @@ class DeliveryDetailsDialog(private val context: Context) {
                     }
                     text.equals("Start", ignoreCase = true) -> {
                         onStart?.invoke()
-                        Toast.makeText(context, "Order started", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                     }
                     text.equals("Complete", ignoreCase = true) -> {
                         onComplete?.invoke()
-                        Toast.makeText(context, "Order completed", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                     }
                     text.equals("Cancel", ignoreCase = true) -> {
                         onCancel?.invoke()
-                        Toast.makeText(context, "Order cancelled", Toast.LENGTH_SHORT).show()
                         dialog.dismiss()
                     }
                 }

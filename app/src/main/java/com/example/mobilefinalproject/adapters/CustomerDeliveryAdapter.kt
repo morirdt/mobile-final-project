@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.BuildConfig
@@ -136,10 +135,7 @@ class CustomerDeliveryAdapter(
                 isFocusable = true
                 setOnClickListener {
                     when {
-                        text.equals("Cancel", ignoreCase = true) -> {
-                            onCancel?.invoke(order)
-                            Toast.makeText(itemView.context, "Order cancelled", Toast.LENGTH_SHORT).show()
-                        }
+                        text.equals("Cancel", ignoreCase = true) -> onCancel?.invoke(order)
                         text.equals("Edit", ignoreCase = true) -> onEdit?.invoke(order)
                         text.equals("Details", ignoreCase = true) -> onDetails?.invoke(order)
                     }

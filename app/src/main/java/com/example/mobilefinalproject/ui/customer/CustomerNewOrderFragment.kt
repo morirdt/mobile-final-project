@@ -72,6 +72,13 @@ class CustomerNewOrderFragment : Fragment() {
         orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
             if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
         }
+
+        orderViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                android.widget.Toast.makeText(requireContext(), error, android.widget.Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
+            }
+        }
     }
 
     private fun setupFieldErrorClearing() {

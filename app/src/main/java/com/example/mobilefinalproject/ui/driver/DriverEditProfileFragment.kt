@@ -20,6 +20,7 @@ import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.databinding.FragmentDriverEditProfileBinding
 import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
+import android.widget.Toast
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
 
@@ -98,6 +99,13 @@ class DriverEditProfileFragment : Fragment() {
 
         driverViewModel.loading.observe(viewLifecycleOwner) { loading ->
             if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
+
+        driverViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                driverViewModel.clearError()
+            }
         }
 
         binding?.driverEditProfileSaveButton?.setOnClickListener { saveProfile() }

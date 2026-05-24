@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.graphics.toColorInt
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobilefinalproject.R
@@ -85,10 +84,7 @@ class FinderDeliveryAdapter(
                 isFocusable = true
                 setOnClickListener {
                     when {
-                        text.equals("Accept", ignoreCase = true) -> {
-                            onAccept?.invoke(order)
-                            Toast.makeText(context, "Order accepted!", Toast.LENGTH_SHORT).show()
-                        }
+                        text.equals("Accept", ignoreCase = true) -> onAccept?.invoke(order)
                         text.equals("Details", ignoreCase = true) -> onDetails?.invoke(order)
                     }
                 }

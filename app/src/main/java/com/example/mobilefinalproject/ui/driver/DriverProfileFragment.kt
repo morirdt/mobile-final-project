@@ -16,6 +16,7 @@ import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.databinding.FragmentDriverProfileBinding
 import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.DriverViewModel
+import android.widget.Toast
 import kotlinx.coroutines.launch
 
 class DriverProfileFragment : Fragment() {
@@ -70,6 +71,13 @@ class DriverProfileFragment : Fragment() {
 
         binding?.driverProfileLogoutButton?.setOnClickListener {
             logout()
+        }
+
+        driverViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                driverViewModel.clearError()
+            }
         }
     }
 

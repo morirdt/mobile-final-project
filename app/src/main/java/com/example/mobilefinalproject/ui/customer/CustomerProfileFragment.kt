@@ -15,6 +15,7 @@ import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.session.UserSessionManager
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.example.mobilefinalproject.databinding.FragmentCustomerProfileBinding
+import android.widget.Toast
 import kotlinx.coroutines.launch
 
 class CustomerProfileFragment : Fragment() {
@@ -66,6 +67,13 @@ class CustomerProfileFragment : Fragment() {
 
         binding?.customerProfileLogoutButton?.setOnClickListener {
             logout()
+        }
+
+        customerViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                customerViewModel.clearError()
+            }
         }
     }
 
