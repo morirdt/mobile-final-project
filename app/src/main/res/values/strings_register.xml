@@ -8,4 +8,5 @@
     <string name="enter_email">your@email.com</string>
     <string name="create_account">Create Account</string>
     <string name="already_have_account">Already have an account?</string>
+    <string name="email">Email</string>
 </resources>

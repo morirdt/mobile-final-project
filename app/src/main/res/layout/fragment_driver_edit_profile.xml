@@ -86,16 +86,16 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Driver ID Label -->
+    <!-- Email Label -->
     <com.google.android.material.textview.MaterialTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="Driver ID"
+        android:text="Email"
         android:textAppearance="?attr/textAppearanceBodyMedium"
         android:textColor="?android:attr/textColorPrimary" />
 
-    <!-- Driver ID Display (Read-only) -->
+    <!-- Email Display (Read-only) -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="48dp"
@@ -108,11 +108,11 @@
         app:boxStrokeColor="?attr/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/driver_edit_profile_id_edit_text"
+            android:id="@+id/driver_edit_profile_email_edit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:enabled="false"
-            android:inputType="text"
+            android:inputType="textEmailAddress"
             android:paddingVertical="0dp"
             android:textAppearance="?attr/textAppearanceBodyLarge" />
 

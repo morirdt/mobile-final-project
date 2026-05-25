@@ -7,22 +7,23 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.adapters.CustomerDeliveryAdapter
 import com.example.mobilefinalproject.databinding.FragmentCustomerMyOrdersBinding
-import com.example.mobilefinalproject.models.DeliveryStatus
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
-import com.example.mobilefinalproject.viewmodels.CustomerViewModel
-import com.example.mobilefinalproject.viewmodels.DeliveryViewModel
-import kotlin.getValue
+import com.example.mobilefinalproject.network.dto.OrderRead
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
+import com.example.mobilefinalproject.viewmodels.OrderViewModel
+import android.widget.Toast
 
 class CustomerMyOrdersFragment : Fragment() {
-    private val deliveryViewModel: DeliveryViewModel by activityViewModels()
-    private val customerViewModel: CustomerViewModel by activityViewModels()
 
+    private val orderViewModel: OrderViewModel by activityViewModels()
     private var binding: FragmentCustomerMyOrdersBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
     private var adapter: CustomerDeliveryAdapter? = null
-    private var allCustomerDeliveries: List<com.example.mobilefinalproject.models.Delivery> = emptyList()
+    private var allOrders: List<OrderRead> = emptyList()
     private var selectedStatusFilter: String = ALL_STATUS_FILTER
 
     override fun onCreateView(
@@ -31,98 +32,114 @@ class CustomerMyOrdersFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerMyOrdersBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         setupRecyclerView()
         setupStatusFilter()
         return binding?.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        orderViewModel.customerOrders.observe(viewLifecycleOwner) { orders ->
+            allOrders = orders
+            applyFilter()
+        }
+
+        orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
+
+        orderViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
+            }
+        }
+
+        orderViewModel.loadMyOrders()
+    }
+
     override fun onResume() {
         super.onResume()
-        refreshData()
+        orderViewModel.loadMyOrders()
     }
 
     private fun setupRecyclerView() {
         binding?.customerMyOrdersRecyclerView?.layoutManager = LinearLayoutManager(context)
         binding?.customerMyOrdersRecyclerView?.setHasFixedSize(true)
-        adapter = CustomerDeliveryAdapter(emptyList()) {
-            // When delivery status changed (e.g., cancelled), refresh data
-            refreshData()
-        }
+
+        adapter = CustomerDeliveryAdapter(
+            onCancel = { order ->
+                orderViewModel.cancelOrder(order.id)
+            },
+            onEdit = { order ->
+                orderViewModel.selectOrder(order)
+                val action = CustomerMyOrdersFragmentDirections
+                    .actionCustomerMyOrdersFragmentToCustomerEditOrderFragment(order.id)
+                findNavController().navigate(action)
+            },
+            onDetails = { order ->
+                com.example.mobilefinalproject.ui.dialogs.DeliveryDetailsDialog(requireContext()).show(
+                    order = order,
+                    showActions = false,
+                    showDriverInfo = true
+                )
+            }
+        )
         binding?.customerMyOrdersRecyclerView?.adapter = adapter
-        observeDeliveries()
+
     }
 
     private fun setupStatusFilter() {
         val spinnerAdapter = ArrayAdapter.createFromResource(
             requireContext(),
-            com.example.mobilefinalproject.R.array.customer_order_status_filter_options,
+            R.array.customer_order_status_filter_options,
             android.R.layout.simple_spinner_item
-        ).also {
-            it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        }
+        ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
 
         binding?.customerMyOrdersStatusSpinner?.adapter = spinnerAdapter
         binding?.customerMyOrdersStatusSpinner?.setSelection(0, false)
-        binding?.customerMyOrdersStatusSpinner?.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: android.widget.AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                selectedStatusFilter = parent.getItemAtPosition(position)?.toString().orEmpty()
-                applyFilter()
+        binding?.customerMyOrdersStatusSpinner?.onItemSelectedListener =
+            object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: android.widget.AdapterView<*>, view: View?, pos: Int, id: Long) {
+                    selectedStatusFilter = parent.getItemAtPosition(pos)?.toString().orEmpty()
+                    applyFilter()
+                }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>) {
+                    selectedStatusFilter = ALL_STATUS_FILTER
+                    applyFilter()
+                }
             }
-
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>) {
-                selectedStatusFilter = ALL_STATUS_FILTER
-                applyFilter()
-            }
-        }
-    }
-
-    private fun observeDeliveries() {
-        deliveryViewModel.customerDeliveries.observe(viewLifecycleOwner) { deliveries ->
-            allCustomerDeliveries = deliveries
-            applyFilter()
-        }
     }
 
     private fun applyFilter() {
-        val filteredDeliveries = when (selectedStatusFilter) {
-            STATUS_PENDING -> allCustomerDeliveries.filter { it.status == DeliveryStatus.PENDING.label }
-            STATUS_ACCEPTED -> allCustomerDeliveries.filter { it.status == DeliveryStatus.ACCEPTED.label }
-            STATUS_IN_PROGRESS -> allCustomerDeliveries.filter { it.status == DeliveryStatus.IN_PROGRESS.label }
-            STATUS_COMPLETED -> allCustomerDeliveries.filter { it.status == DeliveryStatus.COMPLETED.label }
-            STATUS_CANCELLED -> allCustomerDeliveries.filter { it.status == DeliveryStatus.CANCELLED.label }
-            else -> allCustomerDeliveries
+        val filtered = when (selectedStatusFilter) {
+            STATUS_PENDING     -> allOrders.filter { it.status == "pending" }
+            STATUS_ACCEPTED    -> allOrders.filter { it.status == "accepted" }
+            STATUS_IN_PROGRESS -> allOrders.filter { it.status == "in_progress" }
+            STATUS_COMPLETED   -> allOrders.filter { it.status == "completed" }
+            STATUS_CANCELLED   -> allOrders.filter { it.status == "cancelled" }
+            else -> allOrders
         }
-
-        adapter?.submitList(filteredDeliveries)
-    }
-
-    private fun refreshData() {
-        val customer = customerViewModel.customer.value
-        val mockDeliveries = MockDeliveryDataSource.getDeliveriesByCustomer(customer?.id ?: "")
-        deliveryViewModel.setCustomerDeliveries(mockDeliveries)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        refreshData()
+        adapter?.submitList(filtered)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
         binding = null
     }
 
     companion object {
         private const val ALL_STATUS_FILTER = "All"
-        private const val STATUS_PENDING = "Pending"
-        private const val STATUS_ACCEPTED = "Accepted"
+        private const val STATUS_PENDING     = "Pending"
+        private const val STATUS_ACCEPTED    = "Accepted"
         private const val STATUS_IN_PROGRESS = "In Progress"
-        private const val STATUS_COMPLETED = "Completed"
-        private const val STATUS_CANCELLED = "Cancelled"
+        private const val STATUS_COMPLETED   = "Completed"
+        private const val STATUS_CANCELLED   = "Cancelled"
     }
 }

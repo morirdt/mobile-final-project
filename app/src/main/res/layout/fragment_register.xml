@@ -104,7 +104,7 @@
         android:textColor="?android:attr/textColorPrimary" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/full_name_text_input_layout"
+        android:id="@+id/register_full_name_text_input_layout"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginBottom="16dp"
@@ -116,7 +116,7 @@
         app:boxStrokeColor="?attr/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/full_name_text_input_edit_text"
+            android:id="@+id/register_full_name_text_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="text"
@@ -125,17 +125,16 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- ID Number Input -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
-        android:text="@string/id_number"
+        android:text="Email"
         android:textAppearance="?attr/textAppearanceBodyMedium"
         android:textColor="?android:attr/textColorPrimary" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/id_text_input_layout"
+        android:id="@+id/register_email_text_input_layout"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginBottom="16dp"
@@ -147,7 +146,7 @@
         app:boxStrokeColor="?attr/colorPrimary">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/id_text_input_edit_text"
+            android:id="@+id/register_email_text_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="text"
@@ -166,7 +165,7 @@
         android:textColor="?android:attr/textColorPrimary" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/password_text_input_layout"
+        android:id="@+id/register_password_text_input_layout"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginBottom="16dp"
@@ -179,7 +178,7 @@
         app:endIconMode="password_toggle">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/password_text_input_edit_text"
+            android:id="@+id/register_password_text_input_edit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="textPassword"

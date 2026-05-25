@@ -11,33 +11,38 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.mobilefinalproject.BuildConfig
+import com.example.mobilefinalproject.R
+import com.example.mobilefinalproject.cache.ImageCacheManager
 import com.example.mobilefinalproject.databinding.FragmentCustomerEditProfileBinding
-import com.example.mobilefinalproject.session.UserSessionManager
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
+import android.widget.Toast
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
 
 class CustomerEditProfileFragment : Fragment() {
 
     private val customerViewModel: CustomerViewModel by activityViewModels()
     private var binding: FragmentCustomerEditProfileBinding? = null
+    private var loadingOverlay: LoadingOverlayController? = null
+    private var imageCacheManager: ImageCacheManager? = null
     private var selectedImageUri: Uri? = null
 
-    // Image picker launcher
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let {
             selectedImageUri = it
+            // Local URI preview — no caching needed, use Picasso directly.
             binding?.customerEditProfileImageView?.let { imageView ->
-                Picasso.get()
-                    .load(selectedImageUri)
-                    .into(imageView)
+                Picasso.get().load(selectedImageUri).into(imageView)
             }
         }
     }
 
-    // Permission request launcher
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -54,50 +59,65 @@ class CustomerEditProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCustomerEditProfileBinding.inflate(inflater, container, false)
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
+        imageCacheManager = ImageCacheManager(requireContext().applicationContext)
         return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Observe customer data and populate fields
-        customerViewModel.customer.observe(viewLifecycleOwner) { customer ->
-            if (customer != null) {
-                binding?.customerEditProfileFullNameEditText?.setText(customer.fullName)
-                binding?.customerEditProfileIdEditText?.setText(customer.id)
+        customerViewModel.userMe.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                binding?.customerEditProfileFullNameEditText?.setText(user.fullName)
+                binding?.customerEditProfileEmailEditText?.setText(user.email)
+
+                // Don't reload the image if the user already picked a new one from gallery.
+                if (selectedImageUri == null && user.profileImageUrl != null) {
+                    val profilePath = if (user.profileImageUrl.startsWith("/")) {
+                        user.profileImageUrl.substring(1)
+                    } else {
+                        user.profileImageUrl
+                    }
+                    val imageUrl = "${BuildConfig.BASE_URL}${profilePath}"
+                    val imageView = binding?.customerEditProfileImageView ?: return@observe
+                    val cacheManager = imageCacheManager ?: return@observe
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        cacheManager.loadInto(
+                            url = imageUrl,
+                            imageView = imageView,
+                            placeholderRes = R.drawable.ic_person
+                        )
+                    }
+                }
             }
         }
 
-        // Setup button click listeners
-        binding?.customerEditProfileSaveButton?.setOnClickListener {
-            saveProfile()
+        customerViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
         }
 
-        binding?.customerEditProfileCancelButton?.setOnClickListener {
-            findNavController().navigateUp()
+        customerViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                customerViewModel.clearError()
+            }
         }
 
-        binding?.customerEditProfileChangePictureButton?.setOnClickListener {
-            checkAndRequestGalleryPermission()
-        }
+        binding?.customerEditProfileSaveButton?.setOnClickListener { saveProfile() }
+        binding?.customerEditProfileCancelButton?.setOnClickListener { findNavController().navigateUp() }
+        binding?.customerEditProfileChangePictureButton?.setOnClickListener { checkAndRequestGalleryPermission() }
     }
 
     private fun checkAndRequestGalleryPermission() {
-        val permission =
-            android.Manifest.permission.READ_MEDIA_IMAGES
-
+        val permission = android.Manifest.permission.READ_MEDIA_IMAGES
         when {
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                permission
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                imagePickerLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            }
-            else -> {
-                permissionLauncher.launch(permission)
-            }
+            ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED ->
+                imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            else -> permissionLauncher.launch(permission)
         }
     }
 
@@ -110,18 +130,16 @@ class CustomerEditProfileFragment : Fragment() {
             return
         }
 
-        // Get current customer from ViewModel
-        val currentCustomer = customerViewModel.customer.value
-        if (currentCustomer != null) {
-            val updatedCustomer = currentCustomer.copy(fullName = updatedFullName)
-            customerViewModel.updateCustomer(updatedCustomer)
-            UserSessionManager.saveCustomer(requireContext(), updatedCustomer)
+        customerViewModel.updateProfile(fullName = updatedFullName, imageUri = selectedImageUri, onSuccess = {
             findNavController().navigateUp()
-        }
+        })
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
+        imageCacheManager = null
         binding = null
     }
 }

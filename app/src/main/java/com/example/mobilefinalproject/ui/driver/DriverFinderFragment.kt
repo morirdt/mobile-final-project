@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
@@ -19,10 +20,9 @@ import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.mobilefinalproject.R
-import com.example.mobilefinalproject.models.Delivery
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
+import com.example.mobilefinalproject.network.dto.OrderRead
 import com.example.mobilefinalproject.ui.dialogs.DeliveryDetailsDialog
-import com.example.mobilefinalproject.viewmodels.DeliveryViewModel
+import com.example.mobilefinalproject.viewmodels.OrderViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import org.osmdroid.config.Configuration
@@ -34,7 +34,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 class DriverFinderFragment : Fragment() {
-    private val deliveryViewModel: DeliveryViewModel by activityViewModels()
+    private val orderViewModel: OrderViewModel by activityViewModels()
 
     private lateinit var mapView: MapView
     private var myLocationOverlay: MyLocationNewOverlay? = null
@@ -89,17 +89,30 @@ class DriverFinderFragment : Fragment() {
             view.findViewById<MaterialCardView>(R.id.location_denied_banner).visibility = View.GONE
         }
 
-        deliveryViewModel.selectedDelivery.observe(viewLifecycleOwner) { delivery ->
-            if (delivery != null) {
+        orderViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
+            }
+        }
+
+        orderViewModel.selectedOrder.observe(viewLifecycleOwner) { order ->
+            if (order != null) {
                 DeliveryDetailsDialog(requireContext()).show(
-                    delivery = delivery,
-                    onStatusChanged = {
-                        deliveryViewModel.setPendingDeliveries(MockDeliveryDataSource.getPendingDeliveries())
+                    order = order,
+                    onAccept = {
+                        orderViewModel.acceptOrder(order.id) {
+                            Toast.makeText(requireContext(), "Order accepted! Check Active Deliveries.", Toast.LENGTH_SHORT).show()
+                            orderViewModel.selectOrder(null)
+                        }
                     },
+                    onStart = null,
+                    onComplete = null,
+                    onCancel = null,
                     showActions = true,
-                    showDriverName = false,
+                    showDriverInfo = false,
                     onDismiss = {
-                        deliveryViewModel.selectDelivery(null)
+                        orderViewModel.selectOrder(null)
                     }
                 )
             }
@@ -110,6 +123,7 @@ class DriverFinderFragment : Fragment() {
         super.onResume()
         mapView.onResume()
         myLocationOverlay?.enableMyLocation()
+        orderViewModel.loadPendingOrders()
     }
 
     override fun onPause() {
@@ -133,19 +147,17 @@ class DriverFinderFragment : Fragment() {
     }
 
     private fun loadDeliveryMarkers() {
-        deliveryViewModel.setPendingDeliveries(MockDeliveryDataSource.getPendingDeliveries())
-
-        deliveryViewModel.pendingDeliveries.observe(viewLifecycleOwner) { deliveries ->
-            refreshClusteredMarkers(deliveries)
+        orderViewModel.pendingOrders.observe(viewLifecycleOwner) { orders ->
+            refreshClusteredMarkers(orders)
             mapView.invalidate()
         }
     }
 
-    private fun refreshClusteredMarkers(deliveries: List<Delivery>) {
+    private fun refreshClusteredMarkers(orders: List<OrderRead>) {
         clearDeliveryMarkers()
 
         val clusters = DriverFinderMapClusterer.cluster(
-            DriverFinderMapClusterer.toMapPoints(deliveries),
+            DriverFinderMapClusterer.toMapPoints(orders),
             mapView.zoomLevelDouble,
         )
 
@@ -166,7 +178,7 @@ class DriverFinderFragment : Fragment() {
             snippet = point.snippet
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             setOnMarkerClickListener { _, _ ->
-                handleDeliverySelection(point.delivery)
+                orderViewModel.selectOrder(point.order)
                 true
             }
         }
@@ -252,14 +264,10 @@ class DriverFinderFragment : Fragment() {
         return arguments?.getBoolean(ARG_SKIP_LOCATION_PERMISSION_CHECK, false) == true
     }
 
-    fun handleDeliverySelection(delivery: Delivery) {
-        deliveryViewModel.selectDelivery(delivery)
-    }
-
     fun zoomIntoCluster(centerLatitude: Double, centerLongitude: Double) {
         mapView.controller.animateTo(GeoPoint(centerLatitude, centerLongitude))
         mapView.controller.setZoom(DriverFinderMapClusterer.nextClusterZoom(mapView.zoomLevelDouble))
-        refreshClusteredMarkers(deliveryViewModel.pendingDeliveries.value.orEmpty())
+        refreshClusteredMarkers(orderViewModel.pendingOrders.value.orEmpty())
         mapView.invalidate()
     }
 

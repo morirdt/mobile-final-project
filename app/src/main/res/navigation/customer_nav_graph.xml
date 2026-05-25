@@ -9,18 +9,7 @@
         android:id="@+id/customerHomeFragment"
         android:name="com.example.mobilefinalproject.ui.customer.CustomerHomeFragment"
         android:label="Home"
-        tools:layout="@layout/fragment_customer_home">
-        <action
-            android:id="@+id/action_customerHomeFragment_to_customerNewOrderFragment"
-            app:destination="@id/customerNewOrderFragment"
-            app:popUpTo="@id/customerHomeFragment"
-            app:popUpToInclusive="false" />
-        <action
-            android:id="@+id/action_customerHomeFragment_to_customerMyOrdersFragment"
-            app:destination="@id/customerMyOrdersFragment"
-            app:popUpTo="@id/customerHomeFragment"
-            app:popUpToInclusive="false" />
-    </fragment>
+        tools:layout="@layout/fragment_customer_home" />
 
     <fragment
         android:id="@+id/customerNewOrderFragment"
@@ -66,8 +55,8 @@
         android:label="Edit Order"
         tools:layout="@layout/fragment_customer_edit_order">
         <argument
-            android:name="delivery"
-            app:argType="com.example.mobilefinalproject.models.Delivery" />
+            android:name="orderId"
+            app:argType="integer" />
         <action
             android:id="@+id/action_customerEditOrderFragment_to_customerMyOrdersFragment"
             app:destination="@id/customerMyOrdersFragment"

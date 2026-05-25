@@ -69,4 +69,3 @@ class DriverFinderFragmentTest {
             .getString(resId, *args)
     }
 }
-

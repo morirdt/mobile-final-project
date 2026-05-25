@@ -37,4 +37,3 @@ class DriverFinderMapClustererTest {
         assertEquals(20.0, DriverFinderMapClusterer.nextClusterZoom(19.7), 0.0)
     }
 }
-

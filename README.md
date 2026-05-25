@@ -36,4 +36,3 @@ cd /home/razbro/Repos/mobile-final-project
 ./gradlew :app:connectedDebugAndroidTest --no-daemon
 ```
 
-

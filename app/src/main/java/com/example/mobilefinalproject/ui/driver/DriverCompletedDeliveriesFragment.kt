@@ -7,17 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.adapters.CompletedDeliveryAdapter
 import com.example.mobilefinalproject.databinding.FragmentDriverCompletedDeliveriesBinding
-import com.example.mobilefinalproject.models.MockDeliveryDataSource
-import com.example.mobilefinalproject.viewmodels.DeliveryViewModel
+import com.example.mobilefinalproject.ui.common.LoadingOverlayController
+import com.example.mobilefinalproject.viewmodels.OrderViewModel
+import android.widget.Toast
 
 class DriverCompletedDeliveriesFragment : Fragment() {
-    private val deliveryViewModel: DeliveryViewModel by activityViewModels()
+    private val orderViewModel: OrderViewModel by activityViewModels()
     private var binding: FragmentDriverCompletedDeliveriesBinding? = null
-    private var adapter: CompletedDeliveryAdapter? = null
+    private var loadingOverlay: LoadingOverlayController? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,57 +24,43 @@ class DriverCompletedDeliveriesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentDriverCompletedDeliveriesBinding.inflate(inflater, container, false)
-        setupRecyclerView()
+        loadingOverlay = LoadingOverlayController(
+            requireContext(),
+            requireActivity().findViewById(android.R.id.content)
+        )
         return binding?.root
-    }
-
-    override fun onResume() {
-        super.onResume()
-        refreshData()
-    }
-
-    private fun setupRecyclerView() {
-        val layout = LinearLayoutManager(context)
-        binding?.driverCompletedDeliveriesRecyclerView?.layoutManager = layout
-        binding?.driverCompletedDeliveriesRecyclerView?.setHasFixedSize(true)
-
-//        binding?.progressBar?.visibility = View.VISIBLE
-
-        adapter = CompletedDeliveryAdapter(deliveryViewModel.completedDeliveries.value)
-
-        binding?.driverCompletedDeliveriesRecyclerView?.adapter = adapter
-
-//        binding?.swipeRefresh?.setOnRefreshListener {
-//            binding?.swipeRefresh?.isRefreshing = true
-//            refreshData()
-//        }
-
-        observeDeliveries()
-    }
-
-    private fun refreshData() {
-        // TODO: Implement refresh logic
-//        deliveryViewModel.refreshStudents()
-    }
-
-    private fun observeDeliveries() {
-        return deliveryViewModel.completedDeliveries.observe(viewLifecycleOwner) {
-            adapter?.deliveries = it
-            adapter?.notifyDataSetChanged()
-//            binding?.progressBar?.visibility = View.GONE
-//            binding?.swipeRefresh?.isRefreshing = false
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         binding?.driverCompletedDeliveriesRecyclerView?.layoutManager = LinearLayoutManager(requireContext())
 
-        val mockCompletedDeliveries = MockDeliveryDataSource.getCompletedDeliveries()
-        deliveryViewModel.setCompletedDeliveries(mockCompletedDeliveries)
-
-        deliveryViewModel.completedDeliveries.observe(viewLifecycleOwner) { deliveries ->
-            binding?.driverCompletedDeliveriesRecyclerView?.adapter = CompletedDeliveryAdapter(deliveries)
+        orderViewModel.completedOrders.observe(viewLifecycleOwner) { orders ->
+            binding?.driverCompletedDeliveriesRecyclerView?.adapter = CompletedDeliveryAdapter(orders)
         }
+
+        orderViewModel.loading.observe(viewLifecycleOwner) { loading ->
+            if (loading) loadingOverlay?.show() else loadingOverlay?.hide()
+        }
+
+        orderViewModel.error.observe(viewLifecycleOwner) { error ->
+            if (!error.isNullOrBlank()) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+                orderViewModel.clearError()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        orderViewModel.loadCompletedDriverOrders()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        loadingOverlay?.detach()
+        loadingOverlay = null
+        binding = null
     }
 }
