@@ -191,38 +191,6 @@ class OrderViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    @Suppress("unused")
-    fun pickupOrder(orderId: Int, onSuccess: (() -> Unit)? = null) {
-        viewModelScope.launch {
-            _loading.value = true
-            when (val result = repo.pickupOrder(orderId)) {
-                is ApiResult.Success -> {
-                    repo.refreshActiveDriverOrders()
-                    onSuccess?.invoke()
-                }
-                is ApiResult.Error -> _error.value = result.friendlyMessage()
-            }
-            _loading.value = false
-        }
-    }
-
-    @Suppress("unused")
-    fun completeOrder(orderId: Int, onSuccess: (() -> Unit)? = null) {
-        viewModelScope.launch {
-            _loading.value = true
-            when (val result = repo.completeOrder(orderId)) {
-                is ApiResult.Success -> {
-                    repo.refreshActiveDriverOrders()
-                    repo.refreshCompletedDriverOrders()
-                    repo.refreshPendingOrders()
-                    onSuccess?.invoke()
-                }
-                is ApiResult.Error -> _error.value = result.friendlyMessage()
-            }
-            _loading.value = false
-        }
-    }
-
     /**
      * Optimistically marks an order as completed in the local Room cache so the UI
      * updates immediately, then calls the API to persist the change; reverts on failure.

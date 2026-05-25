@@ -4,14 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import com.example.mobilefinalproject.R
 import com.example.mobilefinalproject.databinding.FragmentCustomerHomeBinding
 import com.example.mobilefinalproject.viewmodels.CustomerViewModel
 import com.example.mobilefinalproject.viewmodels.OrderViewModel
-import android.widget.Toast
 
 class CustomerHomeFragment : Fragment() {
 
@@ -30,14 +29,6 @@ class CustomerHomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding?.customerHomeNewOrderButton?.setOnClickListener {
-            findNavController().navigate(R.id.action_customerHomeFragment_to_customerNewOrderFragment)
-        }
-
-        binding?.customerHomeMyOrdersButton?.setOnClickListener {
-            findNavController().navigate(R.id.action_customerHomeFragment_to_customerMyOrdersFragment)
-        }
 
         customerViewModel.userMe.observe(viewLifecycleOwner) { user ->
             val name = user?.fullName ?: "Customer"

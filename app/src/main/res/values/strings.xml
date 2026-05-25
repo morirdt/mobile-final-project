@@ -1,28 +1,6 @@
 <resources>
-<!--    <string name="app_name">MobileFinalProject</string>-->
-<!--    <string name="app_title">TruckBack</string>-->
-<!--    <string name="login_subtitle">Login to continue</string>-->
-<!--    <string name="driver">Driver</string>-->
-<!--    <string name="customer">Customer</string>-->
-<!--    <string name="id_number">ID Number</string>-->
-<!--    <string name="enter_your_id">Enter your ID</string>-->
-<!--    <string name="password">Password</string>-->
-<!--    <string name="enter_phone_number">555-0123</string>-->
-<!--    <string name="login">Login</string>-->
-<!--    <string name="no_account">Don\'t have an account?</string>-->
-<!--    <string name="register">Register</string>-->
-<!--    <string name="register_title">Join TruckBack</string>-->
-<!--    <string name="register_subtitle">Create your account</string>-->
-<!--    <string name="full_name">Full Name</string>-->
-<!--    <string name="enter_your_name">Enter your name</string>-->
-<!--    <string name="email_optional">Email (Optional)</string>-->
-<!--    <string name="enter_email">your@email.com</string>-->
-<!--    <string name="create_account">Create Account</string>-->
-<!--    <string name="already_have_account">Already have an account?</string>-->
     <string name="my_orders_title">My Orders</string>
     <string name="my_orders_subtitle">Go over your pending orders</string>
-    <string name="customer_home_request_title">Request a Delivery</string>
-    <string name="customer_home_request_subtitle">Get your items delivered quickly and safely</string>
     <string name="customer_home_features_title">Why Choose TruckBack?</string>
     <string name="customer_home_feature_fast_title">Fast Delivery</string>
     <string name="customer_home_feature_fast_subtitle">Same-day delivery available</string>
@@ -40,7 +18,7 @@
     <string name="sample_customer_name">Emily Davis</string>
     <string name="sample_price">$21.25</string>
     <string name="sample_status_pending">Pending</string>
-    <string name="sample_date_time">2025-12-27 | 10:00</string>
+    <string name="sample_date_time">2025–12–27 | 10:00</string>
     <string name="from_label">From</string>
     <string name="to_label">To</string>
     <string name="sample_pickup_address">555 Maple Dr, North</string>
@@ -71,10 +49,8 @@
     <string name="finder_sample_destination_address">888 Cedar Ln, South</string>
     <string name="delivery_image">Delivery Image</string>
     <string name="customer_home_title">Welcome back</string>
-    <string name="customer_home_subtitle">Track your orders and create new deliveries.</string>
+    <string name="customer_home_subtitle">Track your orders and explore our features.</string>
     <string name="customer_home_pending">Pending Orders</string>
     <string name="customer_home_active">Active Orders</string>
-    <string name="customer_home_create_order">Create New Order</string>
-    <string name="customer_home_view_orders">View My Orders</string>
     <string name="customer_home_greeting">Hi, %1$s</string>
 </resources>
